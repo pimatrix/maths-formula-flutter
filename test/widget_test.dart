@@ -45,4 +45,18 @@ void main() {
     final out = formulaTextToPlain('2^2 x 2^3 = 2^(2+3) = 2^5 = 32');
     expect(out, '2² x 2³ = 2²⁺³ = 2⁵ = 32');
   });
+
+  test('displayText handles AI text that mixes < signs and caret powers', () {
+    final out = displayText(r'D = b^{2} - 4ac, and D < 0 means no real roots');
+    expect(out, contains('b²'));
+    expect(out, contains('D < 0'));
+    expect(out, isNot(contains('^{')));
+  });
+
+  test('skeleton flattens typed and rendered formulas to the same string',
+      () {
+    expect(skeleton('(a+b)²'), '(a+b)2');
+    expect(skeleton('(a+b)^2'), '(a+b)2');
+    expect(skeleton('(a + b)² = a² + 2ab'), contains('(a+b)2'));
+  });
 }

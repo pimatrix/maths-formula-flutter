@@ -340,66 +340,1144 @@
   "symbols": "sin^-1 = inverse sin (arcsin), NOT 1/sin\nx must lie between -1 and 1"
  },
  "s2": {
-  "title": "Square of a Difference"
+  "title": "Square of a Difference",
+  "about": "Expansion of the square of a difference of two terms. Used to expand brackets quickly and in many proofs.",
+  "symbols": "a = first term\nb = second term",
+  "example": "(5 - 2)^2 = 5^2 - 2(5)(2) + 2^2 = 25 - 20 + 4 = 9. Check: 3^2 = 9."
  },
  "s4": {
-  "title": "Cube of a Sum"
+  "title": "Cube of a Sum",
+  "about": "Expansion of the cube of a sum. Useful in algebra simplification and in binomial-type questions.",
+  "symbols": "a = first term\nb = second term",
+  "example": "(2 + 1)^3 = 2^3 + 3(2^2)(1) + 3(2)(1^2) + 1^3 = 8 + 12 + 6 + 1 = 27. Check: 3^3 = 27."
  },
  "s5": {
-  "title": "Cube of a Difference"
+  "title": "Cube of a Difference",
+  "about": "Expansion of the cube of a difference of two terms.",
+  "symbols": "a = first term\nb = second term",
+  "example": "(3 - 1)^3 = 3^3 - 3(3^2)(1) + 3(3)(1^2) - 1^3 = 27 - 27 + 9 - 1 = 8. Check: 2^3 = 8."
  },
  "s7": {
-  "title": "Difference of Two Cubes"
+  "title": "Difference of Two Cubes",
+  "about": "Factorisation of the difference of two cubes — the reverse of expanding (a - b)(a^2 + ab + b^2).",
+  "symbols": "a = first term\nb = second term",
+  "example": "3^3 - 2^3 = 27 - 8 = 19. By the formula: (3 - 2)(3^2 + 3(2) + 2^2) = 1 x (9 + 6 + 4) = 19."
  },
  "s8": {
-  "title": "Square of a Sum of Three Terms"
+  "title": "Square of a Sum of Three Terms",
+  "about": "Expansion of the square of a sum of three terms — each term squared, plus twice every pair product.",
+  "symbols": "a, b, c = the three terms",
+  "example": "(1 + 2 + 3)^2 = 1 + 4 + 9 + 2(1)(2) + 2(2)(3) + 2(3)(1) = 14 + 4 + 12 + 6 = 36. Check: 6^2 = 36."
  },
  "s9": {
-  "title": "Product of (x + a) and (x + b)"
+  "title": "Product of (x + a) and (x + b)",
+  "about": "Shortcut for multiplying two brackets that share the same x term — used in factorising quadratics in reverse.",
+  "symbols": "x = variable\na, b = constants in the two brackets",
+  "example": "(x + 2)(x + 3) = x^2 + (2 + 3)x + (2)(3) = x^2 + 5x + 6."
  },
  "s11": {
-  "title": "Quotient Law of Indices"
+  "title": "Quotient Law of Indices",
+  "about": "Quotient law of indices: dividing two powers of the same base subtracts the exponents.",
+  "symbols": "a = base (a ≠ 0)\nm, n = exponents (powers)",
+  "example": "2^5 / 2^2 = 2^(5-2) = 2^3 = 8. Check: 32 / 4 = 8."
  },
  "s12": {
-  "title": "Power of a Power Law"
+  "title": "Power of a Power Law",
+  "about": "Power of a power law: raising a power to another power multiplies the exponents.",
+  "symbols": "a = base\nm, n = exponents",
+  "example": "(3^2)^3 = 3^(2x3) = 3^6 = 729. Check: 9^3 = 729."
  },
  "s13": {
-  "title": "Zero Index Law (a⁰ = 1)"
+  "title": "Zero Index Law (a⁰ = 1)",
+  "about": "Zero index law: any non-zero number raised to the power 0 equals 1.",
+  "symbols": "a = base (a ≠ 0)",
+  "example": "7^0 = 1. This comes from the quotient law: 7^3 / 7^3 = 7^(3-3) = 7^0 = 1."
  },
  "s14": {
-  "title": "Negative Index Law"
+  "title": "Negative Index Law",
+  "about": "Negative index law: a negative power means the reciprocal of the positive power.",
+  "symbols": "a = base (a ≠ 0)\nn = positive exponent",
+  "example": "2^-3 = 1 / 2^3 = 1/8 = 0.125."
  },
  "s15": {
-  "title": "Fractional Index Law (Roots)"
+  "title": "Fractional Index Law (Roots)",
+  "about": "Fractional index law: a power of 1/n is the same as the n-th root.",
+  "symbols": "a = base (a ≥ 0)\nn = root (n ≠ 0)",
+  "example": "27^(1/3) = the cube root of 27 = 3, because 3^3 = 27."
  },
  "s16": {
-  "title": "Power of a Product Law"
+  "title": "Power of a Product Law",
+  "about": "Power of a product law: a power applied to a product applies to every factor inside.",
+  "symbols": "a, b = factors\nn = exponent",
+  "example": "(2x)^3 = 2^3 x x^3 = 8x^3. Check with x = 2: (4)^3 = 64 and 8 x 8 = 64."
  },
  "s148": {
-  "title": "Inverse of a Product (AB)⁻¹"
+  "title": "Inverse of a Product (AB)⁻¹",
+  "about": "Inverse of a product: the order REVERSES — (AB)^{-1} = B^{-1}A^{-1}. Like socks and shoes: undo the last one first.",
+  "symbols": "A, B = invertible matrices of the same size",
+  "example": "Reason: (AB)(B^{-1}A^{-1}) = A(BB^{-1})A^{-1} = A I A^{-1} = I, so B^{-1}A^{-1} really is the inverse of AB."
  },
  "s149": {
-  "title": "Inverse of an Inverse (A⁻¹)⁻¹"
+  "title": "Inverse of an Inverse (A⁻¹)⁻¹",
+  "about": "Inverting twice returns the original matrix — the inverse of the inverse is the matrix itself.",
+  "symbols": "A = invertible matrix",
+  "example": "If A^{-1} has rows (3 -1), (0 2), then the inverse of THAT matrix is the original A — no calculation needed, by this rule."
  },
  "s150": {
-  "title": "Inverse of a Scalar Multiple (kA)⁻¹"
+  "title": "Inverse of a Scalar Multiple (kA)⁻¹",
+  "about": "Inverse of a scalar multiple: the scalar comes out as its reciprocal. Pulling k out of an n x n determinant gives k^n, but the inverse only takes one 1/k — a common confusion point.",
+  "symbols": "k = non-zero scalar\nA = invertible matrix",
+  "example": "(3A)^{-1} = (1/3) A^{-1}. If A^{-1} has rows (2 0), (0 2), then (3A)^{-1} has rows (2/3 0), (0 2/3)."
  },
  "s151": {
-  "title": "Inverse of a Transpose (Aᵀ)⁻¹"
+  "title": "Inverse of a Transpose (Aᵀ)⁻¹",
+  "about": "Inverse and transpose commute: the inverse of the transpose equals the transpose of the inverse, either order gives the same matrix.",
+  "symbols": "A^{T} = transpose of A",
+  "example": "To find (A^T)^{-1}, either transpose A and then invert, or invert A and then transpose — both give the same answer; pick whichever is easier."
  },
  "s181": {
-  "title": "Binomial Expansion of (1 + x)ⁿ"
+  "title": "Binomial Expansion of (1 + x)ⁿ",
+  "about": "The binomial expansion for ANY power n (including fractions and negatives) — it never terminates unless n is a positive whole number, and needs |x| < 1 in that case. The first two expansions below are its special cases.",
+  "symbols": "n = any real power\nx = value with |x| < 1 (for non-integer n)",
+  "example": "(1.02)^5 with x = 0.02, n = 5: 1 + 5(0.02) + 10(0.02)^2 + ... = 1 + 0.1 + 0.004 + ... ≈ 1.104 (true value 1.10408)."
  },
  "s182": {
-  "title": "Expansion of (1 − x)⁻¹"
+  "title": "Expansion of (1 − x)⁻¹",
+  "about": "Expansion of 1/(1 - x) — the geometric series 1 + x + x^2 + ..., valid for |x| < 1. The mother of many other expansions.",
+  "symbols": "x = value with |x| < 1",
+  "example": "1/(1 - 0.1) = 1/0.9 ≈ 1 + 0.1 + 0.01 + 0.001 + ... = 1.111... — correct."
  },
  "s183": {
-  "title": "Expansion of (1 − x)⁻²"
+  "title": "Expansion of (1 − x)⁻²",
+  "about": "Expansion of 1/(1 - x)^2 — the coefficients are simply 1, 2, 3, 4, ... It comes from differentiating the (1 - x)^{-1} series.",
+  "symbols": "x = value with |x| < 1",
+  "example": "1/(0.9)^2 ≈ 1 + 2(0.1) + 3(0.01) + 4(0.001) = 1.234 (true value 1.23457)."
  },
  "s204": {
-  "title": "Implicit Function — Total Derivative"
+  "title": "Implicit Function — Total Derivative",
+  "about": "For an implicit relation f(x, y) = 0, you cannot always solve for y — but dy/dx is still available: minus (partial of f w.r.t. x) over (partial of f w.r.t. y), treating f as a function of two variables.",
+  "symbols": "f = the implicit relation set to zero\n∂f/∂x = partial derivative with y treated constant",
+  "example": "Circle x^2 + y^2 = 25, i.e. f = x^2 + y^2 - 25: dy/dx = -(2x)/(2y) = -x/y. At (3, 4): slope = -3/4."
  },
  "s239": {
-  "title": "Volume under a Surface"
+  "title": "Volume under a Surface",
+  "about": "Volume under a surface: the double integral of the height function over the base region. Set up limits from the region's boundaries, integrate inside-out.",
+  "symbols": "V = volume\nf(x, y) = height of the surface above (x, y)\nR = base region",
+  "example": "Volume under z = 1 - x - y over the triangle x ≥ 0, y ≥ 0, x + y ≤ 1: ∫ from 0 to 1 ∫ from 0 to 1-x (1 - x - y) dy dx = 1/6."
+ },
+ "s19": {
+  "about": "The discriminant D = b^2 - 4ac tells the nature of the roots of a quadratic before solving: D > 0 two distinct real roots, D = 0 two equal roots, D < 0 no real roots (complex pair).",
+  "symbols": "D = discriminant\na, b, c = coefficients of ax^2 + bx + c = 0",
+  "example": "For x^2 - 5x + 6 = 0: D = 25 - 24 = 1 > 0, so two distinct real roots (they are 2 and 3)."
+ },
+ "s21": {
+  "about": "Quotient rule of logarithms: the log of a division is the difference of the logs.",
+  "symbols": "m, n = positive numbers\nBase is the same for all logs",
+  "example": "log(100/10) = log 100 - log 10 = 2 - 1 = 1. Check: log 10 = 1."
+ },
+ "s23": {
+  "about": "The logarithm of 1 is always 0, in every base — because any base to the power 0 is 1.",
+  "symbols": "",
+  "example": "log 1 = 0 and ln 1 = 0, since 10^0 = 1 and e^0 = 1."
+ },
+ "s24": {
+  "about": "The logarithm of the base itself is always 1, because base^1 = base.",
+  "symbols": "a = base (a > 0, a ≠ 1)",
+  "example": "log_{10} 10 = 1 and log_{2} 2 = 1."
+ },
+ "s25": {
+  "about": "The natural logarithm of e is 1 — ln uses base e, and the log of the base itself is always 1.",
+  "symbols": "e = Euler's number ≈ 2.718",
+  "example": "ln e = 1, and also ln(e^3) = 3 by the power rule."
+ },
+ "s26": {
+  "about": "A power and a logarithm with the same base cancel each other — they are inverse operations.",
+  "symbols": "a = base (a > 0, a ≠ 1)\nm = positive number",
+  "example": "10^{log 50} = 50, exactly — the power undoes the log."
+ },
+ "s28": {
+  "about": "A logarithm answers the question: 'to what power must the base be raised to get this number?' If a^x = m then x = log of m to base a. 'ln' means log to base e. Logs turn multiplication into addition, which is why they simplify hard calculations.",
+  "symbols": "a = base (a > 0, a ≠ 1)\nm = the number (m > 0)\nx = the logarithm value",
+  "example": "2^3 = 8, so log_{2} 8 = 3."
+ },
+ "s30": {
+  "about": "Sum of the first n terms of an arithmetic progression (AP). The second form (n/2)(a + l) is handy when the last term is known.",
+  "symbols": "S_{n} = sum of first n terms\na = first term\nd = common difference\nl = last (n-th) term",
+  "example": "For 2, 5, 8, ... up to 10 terms: S_{10} = (10/2)[2(2) + 9(3)] = 5 x 31 = 155."
+ },
+ "s32": {
+  "about": "Sum of the first n terms of a geometric progression (GP) when the common ratio r > 1 (for r < 1 the mirrored form is used).",
+  "symbols": "S_{n} = sum of first n terms\na = first term\nr = common ratio (r ≠ 1)",
+  "example": "For 3, 6, 12, ... up to 4 terms: S_{4} = 3(2^4 - 1)/(2 - 1) = 3 x 15 = 45. Check: 3 + 6 + 12 + 24 = 45."
+ },
+ "s34": {
+  "about": "Factorial: the product of all whole numbers from n down to 1. Used everywhere in permutations, combinations and series. By definition 0! = 1.",
+  "symbols": "n = a non-negative whole number\nn! is read 'n factorial'",
+  "example": "5! = 5 x 4 x 3 x 2 x 1 = 120."
+ },
+ "s35": {
+  "about": "The number of ways to choose r items from n items when the order does not matter (combinations).",
+  "symbols": "n = total items\nr = items chosen\nnCr is read 'n choose r'",
+  "example": "Choosing 2 students from 5: 5C2 = 5! / (2! x 3!) = 10 ways."
+ },
+ "s36": {
+  "about": "Symmetry of combinations: choosing r items to take is the same as choosing n - r items to leave out, so the two values are equal. A big calculation shortcut.",
+  "symbols": "n = total items\nr = items chosen",
+  "example": "10C8 = 10C2 = 45 — much easier to compute with 2 than with 8."
+ },
+ "s38": {
+  "about": "The basic definitions of the trigonometric ratios in a right-angled triangle: sin = perpendicular/hypotenuse, cos = base/hypotenuse, tan = perpendicular/base. Every other ratio (cosec, sec, cot) is the reciprocal of one of these.",
+  "symbols": "θ = the angle being considered\nPerpendicular = side opposite to θ\nBase = side next to θ (not the hypotenuse)\nHypotenuse = the longest side, opposite the right angle",
+  "example": "In a 3-4-5 triangle, for the angle opposite the side 3: sin θ = 3/5 = 0.6, cos θ = 4/5 = 0.8, tan θ = 3/4 = 0.75."
+ },
+ "s39": {
+  "about": "The standard values of sin, cos, tan and their reciprocals at 0°, 30°, 45°, 60° and 90° — these must be memorised; they come in almost every exam.",
+  "symbols": "θ = angle\nThe radian measure is written in brackets",
+  "example": "sin 60° = √3/2 ≈ 0.866 and cos 30° = √3/2 as well — notice sin and cos swap values between 30° and 60°."
+ },
+ "s40": {
+  "about": "A memory trick for the standard sin values: for 0°, 30°, 45°, 60°, 90° the sin values are √0/2, √1/2, √2/2, √3/2, √4/2. Cos is the same list in reverse order, and tan = sin/cos.",
+  "symbols": "",
+  "example": "sin 45° = √2/2 = 1/√2 ≈ 0.707, read straight off the pattern."
+ },
+ "s42": {
+  "about": "Fundamental identity linking tan and sec — divide sin^2θ + cos^2θ = 1 by cos^2θ to get it. Used to simplify expressions and prove identities.",
+  "symbols": "θ = angle",
+  "example": "If tan θ = 3/4, then sec^2θ = 1 + 9/16 = 25/16, so sec θ = 5/4 (taking θ acute)."
+ },
+ "s43": {
+  "about": "Fundamental identity linking cot and cosec — divide sin^2θ + cos^2θ = 1 by sin^2θ to get it.",
+  "symbols": "θ = angle",
+  "example": "If cot θ = 5/12, then cosec^2θ = 1 + 25/144 = 169/144, so cosec θ = 13/12 (θ acute)."
+ },
+ "s44": {
+  "about": "Sin is an odd function: changing the sign of the angle changes the sign of sin. Useful for negative angles.",
+  "symbols": "θ = angle",
+  "example": "sin(-30°) = -sin 30° = -1/2."
+ },
+ "s45": {
+  "about": "Cos is an even function: the sign of the angle does not matter for cos. Useful for negative angles.",
+  "symbols": "θ = angle",
+  "example": "cos(-60°) = cos 60° = 1/2."
+ },
+ "s46": {
+  "about": "Tan is an odd function: changing the sign of the angle changes the sign of tan.",
+  "symbols": "θ = angle",
+  "example": "tan(-45°) = -tan 45° = -1."
+ },
+ "s47": {
+  "about": "Allied angle rule: sin of (90° - θ) equals cos θ — sin and cos are complementary, which is exactly why it is called 'co-sine'.",
+  "symbols": "θ = angle",
+  "example": "sin 60° = cos 30° = √3/2 — both sides say the same thing with θ = 30°."
+ },
+ "s48": {
+  "about": "Allied angle rule: cos of (90° - θ) equals sin θ.",
+  "symbols": "θ = angle",
+  "example": "cos 75° = sin 15° — handy when only one of the pair is known."
+ },
+ "s49": {
+  "about": "Allied angle rule: tan of (90° - θ) equals cot θ.",
+  "symbols": "θ = angle",
+  "example": "tan 80° = cot 10°, and since cot 10° = 1/tan 10°, tan 80° is large while tan 10° is small."
+ },
+ "s50": {
+  "about": "Allied angle rule for just past 90°: sin(90° + θ) is still cos θ (sin stays positive in the second quadrant).",
+  "symbols": "θ = angle",
+  "example": "sin 120° = sin(90° + 30°) = cos 30° = √3/2."
+ },
+ "s51": {
+  "about": "Allied angle rule: cos(90° + θ) = -sin θ — cos becomes negative in the second quadrant.",
+  "symbols": "θ = angle",
+  "example": "cos 150° = cos(90° + 60°) = -sin 60° = -√3/2."
+ },
+ "s52": {
+  "about": "Allied angle rule: sin(180° - θ) = sin θ — sin is positive throughout the second quadrant.",
+  "symbols": "θ = angle",
+  "example": "sin 150° = sin(180° - 30°) = sin 30° = 1/2."
+ },
+ "s53": {
+  "about": "Allied angle rule: cos(180° - θ) = -cos θ — cos flips sign in the second quadrant.",
+  "symbols": "θ = angle",
+  "example": "cos 120° = -cos 60° = -1/2."
+ },
+ "s54": {
+  "about": "Allied angle rule: sin(180° + θ) = -sin θ — sin becomes negative in the third quadrant.",
+  "symbols": "θ = angle",
+  "example": "sin 210° = -sin 30° = -1/2."
+ },
+ "s55": {
+  "about": "Allied angle rule: cos(180° + θ) = -cos θ — cos is also negative in the third quadrant.",
+  "symbols": "θ = angle",
+  "example": "cos 240° = -cos 60° = -1/2."
+ },
+ "s56": {
+  "about": "Allied angle rule: tan(180° + θ) = tan θ — tan is positive in the third quadrant (and repeats every 180°).",
+  "symbols": "θ = angle",
+  "example": "tan 225° = tan 45° = 1."
+ },
+ "s57": {
+  "about": "Allied angle rule: sin(360° - θ) = -sin θ — sin is negative in the fourth quadrant.",
+  "symbols": "θ = angle",
+  "example": "sin 300° = -sin 60° = -√3/2."
+ },
+ "s58": {
+  "about": "Allied angle rule: cos(360° - θ) = cos θ — cos stays positive in the fourth quadrant.",
+  "symbols": "θ = angle",
+  "example": "cos 330° = cos 30° = √3/2."
+ },
+ "s59": {
+  "about": "The ASTC rule tells the sign of ratios in each quadrant: 1st quadrant All positive, 2nd only Sin (and cosec), 3rd only Tan (and cot), 4th only Cos (and sec). Remember it as 'All Silver Tea Cups'.",
+  "symbols": "θ = angle, measured from the positive x-axis",
+  "example": "150° is in the 2nd quadrant: sin 150° is positive (1/2) while cos 150° and tan 150° are negative."
+ },
+ "s61": {
+  "about": "One radian in degrees: a radian is the angle whose arc length equals the radius, and it works out to about 57.3 degrees.",
+  "symbols": "π ≈ 3.14159\nrad = radian, the SI unit of angle",
+  "example": "2 rad = 2 x 57.3° ≈ 114.6°."
+ },
+ "s62": {
+  "about": "One degree in radians — the basic conversion used to turn any degree measure into radians: multiply degrees by π/180.",
+  "symbols": "π ≈ 3.14159",
+  "example": "90° = 90 x π/180 = π/2 rad ≈ 1.571 rad."
+ },
+ "s66": {
+  "about": "Tan of a sum or difference of two angles, written using the tans of the parts. Note the sign pattern: same sign on top, opposite sign below.",
+  "symbols": "A, B = the two angles",
+  "example": "tan 75° = tan(45° + 30°) = (1 + 1/√3) / (1 - 1/√3) = 2 + √3 ≈ 3.73."
+ },
+ "s69": {
+  "about": "Tan of double the angle, from the tan(A + B) formula with A = B.",
+  "symbols": "A = angle",
+  "example": "tan 30° = 1/√3, so tan 60° = 2(1/√3) / (1 - 1/3) = (2/√3)/(2/3) = √3 ≈ 1.73 — matches the standard table."
+ },
+ "s70": {
+  "about": "Sin of three times an angle, written using sin of the angle alone.",
+  "symbols": "A = angle",
+  "example": "sin 90° with A = 30°: 3 sin 30° - 4 sin^3 30° = 3(1/2) - 4(1/8) = 1.5 - 0.5 = 1. Correct, sin 90° = 1."
+ },
+ "s71": {
+  "about": "Cos of three times an angle, written using cos of the angle alone. Notice it mirrors the sin 3A pattern.",
+  "symbols": "A = angle",
+  "example": "cos 180° with A = 60°: 4 cos^3 60° - 3 cos 60° = 4(1/8) - 3(1/2) = 0.5 - 1.5 = -1. Correct, cos 180° = -1."
+ },
+ "s72": {
+  "about": "Half-angle formula: sin squared of A/2 in terms of cos A. Used to find values at 15°, 22.5° and in integration.",
+  "symbols": "A = angle",
+  "example": "sin^2(30°) with A = 60°: (1 - cos 60°)/2 = (1 - 0.5)/2 = 0.25, so sin 30° = 0.5 (positive, 30° is in the 1st quadrant)."
+ },
+ "s73": {
+  "about": "Half-angle formula: cos squared of A/2 in terms of cos A.",
+  "symbols": "A = angle",
+  "example": "cos^2(30°) with A = 60°: (1 + cos 60°)/2 = 1.5/2 = 0.75, so cos 30° = √3/2 ≈ 0.866."
+ },
+ "s74": {
+  "about": "Half-angle formula: tan squared of A/2 as a ratio of (1 - cos A) and (1 + cos A).",
+  "symbols": "A = angle",
+  "example": "tan^2(22.5°) with A = 45°: (1 - 1/√2)/(1 + 1/√2) ≈ 0.172, so tan 22.5° ≈ 0.414."
+ },
+ "s76": {
+  "about": "Product-to-sum conversion: twice cos A sin B written as a difference of two sines. Used to integrate products of trig functions.",
+  "symbols": "A, B = the two angles",
+  "example": "2 cos 60° sin 30° = sin 90° - sin 30° = 1 - 0.5 = 0.5. Check directly: 2 x 0.5 x 0.5 = 0.5."
+ },
+ "s77": {
+  "about": "Product-to-sum conversion: twice cos A cos B written as a sum of two cosines. Used to integrate products of trig functions.",
+  "symbols": "A, B = the two angles",
+  "example": "2 cos 60° cos 30° = cos 90° + cos 30° = 0 + √3/2 ≈ 0.866. Check: 2 x 0.5 x 0.866 = 0.866."
+ },
+ "s78": {
+  "about": "Product-to-sum conversion: twice sin A sin B written as a difference of two cosines. Mind the order — cos(A - B) comes first.",
+  "symbols": "A, B = the two angles",
+  "example": "2 sin 60° sin 30° = cos 30° - cos 90° = √3/2 - 0 ≈ 0.866. Check: 2 x 0.866 x 0.5 = 0.866."
+ },
+ "s79": {
+  "about": "Sum-to-product conversion: a sum of two sines becomes a product — half the sum of angles inside sin, half the difference inside cos.",
+  "symbols": "C, D = the two angles",
+  "example": "sin 75° + sin 15° = 2 sin 45° cos 30° = 2 x (1/√2) x (√3/2) = √3/√2 ≈ 1.225."
+ },
+ "s80": {
+  "about": "Sum-to-product conversion: a difference of two sines becomes a product of cos (half-sum) and sin (half-difference).",
+  "symbols": "C, D = the two angles",
+  "example": "sin 75° - sin 15° = 2 cos 45° sin 30° = 2 x (1/√2) x (1/2) = 1/√2 ≈ 0.707."
+ },
+ "s81": {
+  "about": "Sum-to-product conversion: a sum of two cosines becomes a product of two cosines — half-sum and half-difference.",
+  "symbols": "C, D = the two angles",
+  "example": "cos 75° + cos 15° = 2 cos 45° cos 30° = 2 x (1/√2) x (√3/2) = √3/√2 ≈ 1.225."
+ },
+ "s82": {
+  "about": "Sum-to-product conversion: a difference of two cosines becomes a product of two sines, with a minus sign in front.",
+  "symbols": "C, D = the two angles",
+  "example": "cos 15° - cos 75° = -2 sin 45° sin(-30°) = -2 x (1/√2) x (-1/2) = 1/√2 ≈ 0.707."
+ },
+ "s83": {
+  "about": "The derivative dy/dx measures how fast y changes when x changes a little — geometrically it is the slope of the tangent to the curve at that point. Almost every differentiation question is built from the master rule d/dx(x^n) = n x^{n-1} plus the working rules.",
+  "symbols": "dy/dx = derivative of y with respect to x\nx = independent variable\ny = dependent variable (a function of x)",
+  "example": "For y = x^3, dy/dx = 3x^2. At x = 2 the slope is 3 x 4 = 12 — the curve is rising steeply there."
+ },
+ "s85": {
+  "about": "The derivative of any constant is zero — a constant never changes, so its rate of change is 0.",
+  "symbols": "",
+  "example": "d/dx (7) = 0, and in y = x^2 + 5 the +5 disappears on differentiating: dy/dx = 2x."
+ },
+ "s86": {
+  "about": "Derivative of root x. Write √x as x^{1/2} and use the power rule — the answer is 1/(2√x).",
+  "symbols": "x = variable (x > 0)",
+  "example": "At x = 4: d/dx(√x) = 1/(2 x 2) = 1/4 — the curve y = √x flattens as x grows."
+ },
+ "s87": {
+  "about": "Derivative of 1/x. Write 1/x as x^{-1} and use the power rule: the answer is -1/x^2.",
+  "symbols": "x = variable (x ≠ 0)",
+  "example": "For y = 1/x at x = 2: dy/dx = -1/4. The negative sign says y decreases as x increases."
+ },
+ "s89": {
+  "about": "Derivative of an exponential with any base a — the function reproduces itself, multiplied by ln a. For base e, ln e = 1, giving the famous d/dx(e^x) = e^x.",
+  "symbols": "a = base (a > 0)\nln = natural logarithm",
+  "example": "d/dx (2^x) = 2^x ln 2 ≈ 0.693 x 2^x. At x = 3: 8 x 0.693 ≈ 5.55."
+ },
+ "s91": {
+  "about": "Derivative of log base a of x. For the natural log (a = e) it reduces to 1/x, since ln e = 1.",
+  "symbols": "a = base of the logarithm\nx = variable (x > 0)",
+  "example": "d/dx (log_{10} x) = 1/(x ln 10). At x = 10 this is 1/(10 x 2.303) ≈ 0.0434."
+ },
+ "s95": {
+  "about": "Derivative of cot x is -cosec squared x. Remember the minus sign — it comes with cot, cos and cosec derivatives.",
+  "symbols": "x = angle in radians",
+  "example": "At x = 45° (π/4): d/dx(cot x) = -cosec^2(π/4) = -(√2)^2 = -2."
+ },
+ "s96": {
+  "about": "Derivative of sec x is sec x tan x — sec reproduces itself times tan.",
+  "symbols": "x = angle in radians",
+  "example": "At x = 0: sec 0 tan 0 = 1 x 0 = 0 — the sec curve is flat at its minimum point x = 0."
+ },
+ "s97": {
+  "about": "Derivative of cosec x is -cosec x cot x, with a minus sign like all 'co' functions.",
+  "symbols": "x = angle in radians",
+  "example": "At x = 90° (π/2): -cosec(π/2) cot(π/2) = -1 x 0 = 0 — flat at the minimum of cosec."
+ },
+ "s99": {
+  "about": "Derivative of inverse cos — the negative of the inverse sin derivative; the two add to zero because sin^{-1}x + cos^{-1}x is a constant (π/2).",
+  "symbols": "x = value between -1 and 1",
+  "example": "At x = 0: d/dx(cos^{-1}x) = -1/√1 = -1."
+ },
+ "s101": {
+  "about": "Derivative of inverse cot — the negative of the inverse tan derivative.",
+  "symbols": "x = any real value",
+  "example": "At x = 1: d/dx(cot^{-1}x) = -1/(1 + 1) = -1/2."
+ },
+ "s102": {
+  "about": "Derivative of inverse sec. The x outside the root is taken positive in the standard (principal) range used in this course.",
+  "symbols": "x = value with |x| > 1",
+  "example": "At x = 2: 1 / (2√(4 - 1)) = 1/(2√3) ≈ 0.289."
+ },
+ "s103": {
+  "about": "Derivative of inverse cosec — the negative of the inverse sec derivative.",
+  "symbols": "x = value with |x| > 1",
+  "example": "At x = 2: -1 / (2√(4 - 1)) = -1/(2√3) ≈ -0.289."
+ },
+ "s104": {
+  "about": "The three working rules of differentiation. Product rule for a product u·v, quotient rule for a division u/v, and chain rule for a function inside a function — in the chain rule, differentiate the outer function, keep the inner as it is, then multiply by the derivative of the inner.",
+  "symbols": "u, v = functions of x\nu' or du/dx = derivative of u",
+  "example": "Product rule: d/dx (x · e^x) = x·e^x + e^x·1 = e^x(x + 1). Chain rule: d/dx (sin(x^2)) = cos(x^2) · 2x."
+ },
+ "s105": {
+  "about": "Integration is differentiation in reverse: finding a function whose derivative is the given function. Every indefinite integral carries a constant + C, because differentiating a constant gives zero so it cannot be recovered. A definite integral (with limits) gives the area under the curve.",
+  "symbols": "∫ = integral sign\ndx = with respect to x\nC = constant of integration",
+  "example": "∫ 3x^2 dx = x^3 + C — check by differentiating: d/dx(x^3 + C) = 3x^2. Correct."
+ },
+ "s107": {
+  "about": "The integral of 1/x is ln|x| — the one power the power rule cannot handle (n = -1 would divide by zero). The modulus keeps it valid for negative x too.",
+  "symbols": "ln = natural logarithm\nC = constant of integration",
+  "example": "∫ from 1 to e of (1/x) dx = ln e - ln 1 = 1 - 0 = 1."
+ },
+ "s109": {
+  "about": "Integral of an exponential with base a — itself divided by ln a (the reverse of its derivative).",
+  "symbols": "a = base (a > 0, a ≠ 1)\nC = constant of integration",
+  "example": "∫ 2^x dx = 2^x / ln 2 + C. Check with the definite integral from 0 to 1: (2 - 1)/ln 2 ≈ 1.44."
+ },
+ "s112": {
+  "about": "Integral of sec squared is tan — the reverse of d/dx(tan x) = sec^2 x.",
+  "symbols": "x = angle in radians\nC = constant of integration",
+  "example": "∫ from 0 to π/4 of sec^2 x dx = tan(π/4) - tan 0 = 1 - 0 = 1."
+ },
+ "s113": {
+  "about": "Integral of cosec squared is -cot — the reverse of d/dx(cot x) = -cosec^2 x. Note the minus sign in the answer.",
+  "symbols": "x = angle in radians\nC = constant of integration",
+  "example": "∫ from π/4 to π/2 of cosec^2 x dx = [-cot x] = -cot(π/2) + cot(π/4) = 0 + 1 = 1."
+ },
+ "s114": {
+  "about": "Integral of sec x tan x is sec x — the reverse of d/dx(sec x).",
+  "symbols": "x = angle in radians\nC = constant of integration",
+  "example": "∫ from 0 to π/3 of sec x tan x dx = sec(π/3) - sec 0 = 2 - 1 = 1."
+ },
+ "s115": {
+  "about": "Integral of cosec x cot x is -cosec x — the reverse of d/dx(cosec x), minus sign included.",
+  "symbols": "x = angle in radians\nC = constant of integration",
+  "example": "∫ from π/6 to π/2 of cosec x cot x dx = [-cosec x] = -1 + 2 = 1."
+ },
+ "s117": {
+  "about": "Integral of cot x — write it as cos x / sin x; the numerator is the derivative of the denominator, giving ln|sin x|.",
+  "symbols": "x = angle in radians\nC = constant of integration",
+  "example": "∫ from π/6 to π/2 of cot x dx = ln(sin(π/2)) - ln(sin(π/6)) = ln 1 - ln(1/2) = ln 2 ≈ 0.693."
+ },
+ "s118": {
+  "about": "Integral of sec x — a standard result worth memorising: ln|sec x + tan x|. (The cosec one has a minus inside instead.)",
+  "symbols": "x = angle in radians\nC = constant of integration",
+  "example": "∫ from 0 to π/4 of sec x dx = ln(√2 + 1) - ln(1 + 0) = ln(2.414) ≈ 0.881."
+ },
+ "s119": {
+  "about": "Integral of cosec x — standard result: ln|cosec x - cot x|. Compare with sec, where the sign inside is plus.",
+  "symbols": "x = angle in radians\nC = constant of integration",
+  "example": "∫ from π/4 to π/2 of cosec x dx = ln(1 - 0) - ln(√2 - 1) = -ln(0.414) ≈ 0.881."
+ },
+ "s120": {
+  "about": "Integral of sin squared — first rewrite it with the half-angle identity sin^2 x = (1 - cos 2x)/2, then integrate term by term.",
+  "symbols": "x = angle in radians\nC = constant of integration",
+  "example": "∫ from 0 to π of sin^2 x dx = [x/2 - sin 2x/4] from 0 to π = π/2 - 0 = π/2 ≈ 1.571."
+ },
+ "s121": {
+  "about": "Integral of cos squared — use cos^2 x = (1 + cos 2x)/2 first. Only the sign of the sin 2x term differs from the sin squared integral.",
+  "symbols": "x = angle in radians\nC = constant of integration",
+  "example": "∫ from 0 to π of cos^2 x dx = π/2 — the same as sin squared over a full half-period, which makes sense since the two curves are shifts of each other."
+ },
+ "s122": {
+  "about": "Standard form: integral of 1/(x^2 + a^2) gives (1/a) tan inverse of (x/a). One of the six standard forms to memorise.",
+  "symbols": "a = positive constant\nC = constant of integration",
+  "example": "∫ dx/(x^2 + 4) with a = 2: (1/2) tan^{-1}(x/2) + C. From 0 to 2: (1/2)(π/4) = π/8 ≈ 0.393."
+ },
+ "s123": {
+  "about": "Standard form: integral of 1/√(a^2 - x^2) gives sin inverse of (x/a). Valid for |x| < a.",
+  "symbols": "a = positive constant\nC = constant of integration",
+  "example": "∫ from 0 to 1 of dx/√(4 - x^2) = sin^{-1}(1/2) - sin^{-1}(0) = π/6 ≈ 0.524."
+ },
+ "s124": {
+  "about": "Standard form: integral of 1/(a^2 - x^2) gives a log ratio, with 1/(2a) outside. Watch the order: (a + x) over (a - x).",
+  "symbols": "a = positive constant\nC = constant of integration",
+  "example": "∫ from 0 to 1 of dx/(4 - x^2) = (1/4) ln(3/1) - (1/4) ln(2/2) = (1/4) ln 3 ≈ 0.275."
+ },
+ "s125": {
+  "about": "Standard form: integral of 1/(x^2 - a^2) gives a log ratio with (x - a) over (x + a) — the mirror image of the a^2 - x^2 form (and its answer differs by sign).",
+  "symbols": "a = positive constant\nC = constant of integration",
+  "example": "∫ from 3 to 4 of dx/(x^2 - 4) = (1/4)[ln(2/6) - ln(1/5)] = (1/4) ln(5/3) ≈ 0.128."
+ },
+ "s126": {
+  "about": "Standard form: integral of 1/√(x^2 + a^2) gives ln|x + √(x^2 + a^2)|. No inverse function appears — it is a log.",
+  "symbols": "a = positive constant\nC = constant of integration",
+  "example": "∫ from 0 to 3 of dx/√(x^2 + 16) = ln(3 + 5) - ln(0 + 4) = ln 2 ≈ 0.693."
+ },
+ "s127": {
+  "about": "Standard form: integral of 1/√(x^2 - a^2) gives ln|x + √(x^2 - a^2)|. Valid for x > a.",
+  "symbols": "a = positive constant\nC = constant of integration",
+  "example": "∫ from 5 to 13 of dx/√(x^2 - 25) = ln(13 + 12) - ln(5 + 0) = ln 5 ≈ 1.609."
+ },
+ "s129": {
+  "about": "Standard form: integral of √(x^2 + a^2) — the answer has an x/2 times root part plus an (a^2/2) log part. All three root-integrals follow this same pattern.",
+  "symbols": "a = positive constant\nC = constant of integration",
+  "example": "∫ from 0 to 3 of √(x^2 + 16) dx = (3/2)(5) + 8 ln(8/4) = 7.5 + 8 ln 2 ≈ 13.05."
+ },
+ "s130": {
+  "about": "Standard form: integral of √(x^2 - a^2) — same pattern as the +a^2 version but the log term is SUBTRACTED.",
+  "symbols": "a = positive constant\nC = constant of integration",
+  "example": "∫ from 5 to 13 of √(x^2 - 25) dx = (13/2)(12) - (25/2) ln(25/5) = 78 - 12.5 ln 25 ≈ 37.8."
+ },
+ "s131": {
+  "about": "Integration by Parts handles a product: ∫u·v dx = u∫v dx - ∫(u' · ∫v dx) dx; choose u by the ILATE order (Inverse, Log, Algebraic, Trig, Exponential — first in the list becomes u). Partial fractions splits a rational function into simple pieces by writing it as a sum of fractions with linear/quadratic denominators.",
+  "symbols": "u = the part to differentiate (chosen by ILATE)\nv = the part to integrate",
+  "example": "∫ x e^x dx by parts (u = x): x e^x - ∫ e^x dx = e^x(x - 1) + C."
+ },
+ "s133": {
+  "about": "Standard limit: tan x / x approaches 1 as x approaches 0 (x in radians). It follows from the famous sin x / x limit.",
+  "symbols": "x = angle in radians",
+  "example": "lim of tan(0.01)/0.01 ≈ 1.00003 — already very close to 1 for small x."
+ },
+ "s134": {
+  "about": "Standard limit: (e^x - 1)/x approaches 1 as x approaches 0. The basis of the derivative of e^x.",
+  "symbols": "e = Euler's number ≈ 2.718",
+  "example": "lim of (x^2 - 1)... try x = 0.001: (e^0.001 - 1)/0.001 ≈ 1.0005, close to 1."
+ },
+ "s135": {
+  "about": "Standard limit: (a^x - 1)/x approaches ln a as x approaches 0 — for a = e it gives 1, matching the e^x limit.",
+  "symbols": "a = base (a > 0)",
+  "example": "For a = 2: lim (2^x - 1)/x = ln 2 ≈ 0.693 as x → 0."
+ },
+ "s136": {
+  "about": "Standard limit: ln(1 + x)/x approaches 1 as x approaches 0. The basis of the derivative of ln x.",
+  "symbols": "ln = natural logarithm",
+  "example": "x = 0.001: ln(1.001)/0.001 ≈ 0.9995, close to 1."
+ },
+ "s137": {
+  "about": "Standard limit: (1 + x)^{1/x} approaches e ≈ 2.718 as x approaches 0 — one of the definitions of e. The (1 + 1/n)^n form is the same idea for large n.",
+  "symbols": "e = Euler's number ≈ 2.718",
+  "example": "(1 + 1/1000)^1000 ≈ 2.717 — already close to e."
+ },
+ "s138": {
+  "about": "Standard limit: (x^n - a^n)/(x - a) approaches n·a^(n-1) as x approaches a — this is exactly the power rule for derivatives in disguise.",
+  "symbols": "n = any real power\na = the point approached",
+  "example": "lim x→2 of (x^3 - 8)/(x - 2) = 3 x 2^2 = 12."
+ },
+ "s139": {
+  "about": "A caution that ties the standard limits together: limits like sin x / x = 1 hold only when x is measured in radians. These limits are the foundation of the series expansions (Taylor and Maclaurin) in Unit 2.",
+  "symbols": "",
+  "example": "sin(0.01 rad)/0.01 ≈ 0.99998 ≈ 1, but with 0.01 degrees the ratio is completely different — always convert to radians first."
+ },
+ "s141": {
+  "about": "Expanding a 3x3 determinant along the first row: each element times its cofactor (the 2x2 determinant left after deleting its row and column), with signs + - + across the row.",
+  "symbols": "a to i = the nine entries of the matrix, row by row",
+  "example": "For the matrix with rows (1 2 3), (0 1 4), (5 6 0): det = 1(0 - 24) - 2(0 - 20) + 3(0 - 5) = -24 + 40 - 15 = 1."
+ },
+ "s142": {
+  "about": "The minor of an element is the small determinant left after deleting its row and column; the cofactor is the minor with a sign (-1)^{i+j} — positive on the checkerboard squares where i + j is even. Cofactors build the adjoint and the inverse.",
+  "symbols": "M_{ij} = minor of the element in row i, column j\nC_{ij} = its cofactor",
+  "example": "In rows (1 2 3), (0 1 4), (5 6 0), the minor of 2 (row 1, col 2) deletes row 1 and column 2, leaving det of (0 4 / 5 0) = -20; its cofactor is -(-20) = 20 since (-1)^{1+2} = -1."
+ },
+ "s143": {
+  "about": "The most-asked determinant properties: swapping two rows flips the sign; identical or proportional rows make it zero; a scalar pulled out of one row multiplies the value (from all rows of an n x n matrix, k comes out as k^n); adding a multiple of one row to another leaves it unchanged; a triangular determinant equals the product of its diagonal.",
+  "symbols": "|A| = determinant of A",
+  "example": "If |A| = 5 for a 3x3 matrix, then |2A| = 2^3 x 5 = 40 — the 2 comes out of all 3 rows."
+ },
+ "s145": {
+  "about": "The defining property of the adjoint: A times adj(A) equals |A| times the identity matrix. Dividing by |A| gives the inverse formula A^{-1} = adj(A)/|A|.",
+  "symbols": "adj(A) = adjoint (transpose of the cofactor matrix)\n|A| = determinant\nI = identity matrix",
+  "example": "For A with rows (2 0), (0 3): adj(A) has rows (3 0), (0 2), and A·adj(A) has rows (6 0), (0 6) = 6I — indeed |A| = 6."
+ },
+ "s146": {
+  "about": "The determinant of the inverse is the reciprocal of the determinant — a direct consequence of |AB| = |A||B| applied to A·A^{-1} = I.",
+  "symbols": "|A| = determinant of A (must be non-zero)",
+  "example": "If |A| = 4 then |A^{-1}| = 1/4 = 0.25."
+ },
+ "s147": {
+  "about": "Determinant of the adjoint: |adj A| = |A|^{n-1} for an n x n matrix. Comes from taking determinants on both sides of A·adj(A) = |A| I.",
+  "symbols": "n = order (size) of the matrix",
+  "example": "For a 3x3 matrix with |A| = 2: |adj A| = 2^{3-1} = 4."
+ },
+ "s152": {
+  "about": "Adjoint of a product also reverses order: adj(AB) = adj(B) adj(A), exactly like the inverse rule.",
+  "symbols": "A, B = square matrices of the same size",
+  "example": "This follows from the inverse rule: adj(AB) = |AB|(AB)^{-1} = |A||B| B^{-1}A^{-1} = adj(B) adj(A)."
+ },
+ "s153": {
+  "about": "A symmetric matrix equals its own transpose — it is a mirror image across the main diagonal, so entry (i, j) equals entry (j, i).",
+  "symbols": "A^{T} = transpose of A",
+  "example": "The matrix with rows (1 2), (2 5) is symmetric: transposing swaps the two 2s with each other, giving back the same matrix."
+ },
+ "s154": {
+  "about": "A skew-symmetric matrix equals the negative of its transpose. Comparing diagonal entries with themselves forces every diagonal entry to be 0.",
+  "symbols": "A^{T} = transpose of A",
+  "example": "Rows (0 3), (-3 0): the transpose is rows (0 -3), (3 0), which is exactly -A. Note the zeros on the diagonal."
+ },
+ "s155": {
+  "about": "An orthogonal matrix has its transpose as its inverse — inverting is free. Such matrices represent rotations and reflections; their determinant is always +1 or -1.",
+  "symbols": "I = identity matrix\nA^{T} = transpose",
+  "example": "The rotation matrix rows (cos θ, -sin θ), (sin θ, cos θ) is orthogonal: multiplying it by its transpose gives I for every θ."
+ },
+ "s156": {
+  "about": "An idempotent matrix squares to itself: A^2 = A. Projection matrices are the standard example — projecting twice changes nothing the second time.",
+  "symbols": "A = square matrix",
+  "example": "A = rows (1 0), (0 0) (projection onto the x-axis): A^2 = rows (1 0), (0 0) = A."
+ },
+ "s157": {
+  "about": "An involutory matrix is its own inverse: A^2 = I. Reflections are the standard example, and its inverse is itself.",
+  "symbols": "I = identity matrix",
+  "example": "A = rows (0 1), (1 0) (swap): A^2 = rows (1 0), (0 1) = I — swapping twice restores the original."
+ },
+ "s158": {
+  "about": "Every square matrix splits uniquely into a symmetric part (A + A^T)/2 plus a skew-symmetric part (A - A^T)/2. A standard exam proof question.",
+  "symbols": "A^{T} = transpose of A",
+  "example": "For A with rows (1 4), (2 3): symmetric part = rows (1 3), (3 3), skew part = rows (0 1), (-1 0); adding them returns A."
+ },
+ "s159": {
+  "about": "The rank is the number of independent rows (columns) of a matrix — equivalently the size of its largest non-zero minor. Find it by reducing to echelon form with elementary row operations and counting the non-zero rows. Rank decides consistency of equations and much more.",
+  "symbols": "ρ(A) or rank(A) = the rank\nEchelon form = staircase form after row operations",
+  "example": "Rows (1 2), (2 4): the second row is twice the first, so rank = 1 — only one independent row."
+ },
+ "s160": {
+  "about": "Consistency test for AX = B by comparing ranks: if rank(A) ≠ rank of the augmented matrix [A|B], no solution; if both equal the number of unknowns n, a unique solution; if both equal some r < n, infinitely many solutions with n - r free variables.",
+  "symbols": "A = coefficient matrix\n[A | B] = augmented matrix (B attached as a column)\nn = number of unknowns",
+  "example": "x + y = 3 and 2x + 2y = 7: rank(A) = 1 but rank([A|B]) = 2, so no solution — the lines are parallel and never meet."
+ },
+ "s161": {
+  "about": "An eigenvalue λ with eigenvector X means the matrix only stretches X: AX = λX, with X non-zero. Eigenvalues come from the characteristic equation |A - λI| = 0; each eigenvalue's eigenvectors come from solving (A - λI)X = 0.",
+  "symbols": "λ = eigenvalue (a scalar)\nX = eigenvector (non-zero)\nI = identity matrix",
+  "example": "For A with rows (2 0), (0 3): λ = 2 with X = (1, 0), and λ = 3 with X = (0, 1) — a diagonal matrix stretches each axis separately."
+ },
+ "s164": {
+  "about": "For a triangular (or diagonal) matrix, the eigenvalues are simply the diagonal entries — because A - λI stays triangular and its determinant is the product of diagonal terms.",
+  "symbols": "λ = eigenvalue",
+  "example": "The upper triangular matrix with rows (1 5 9), (0 4 2), (0 0 -3) has eigenvalues 1, 4 and -3 straight from the diagonal."
+ },
+ "s165": {
+  "about": "Inverting a matrix reciprocates its eigenvalues: if λ is an eigenvalue of A, then 1/λ is an eigenvalue of A^{-1}, with the same eigenvector.",
+  "symbols": "λ = eigenvalue of A (non-zero)",
+  "example": "If A has eigenvalues 2 and 4, then A^{-1} has eigenvalues 1/2 and 1/4."
+ },
+ "s166": {
+  "about": "Powers of a matrix raise its eigenvalues to the same power: λ becomes λ^k for A^k, with the same eigenvector. (Apply AX = λX repeatedly.)",
+  "symbols": "λ = eigenvalue of A\nk = positive whole number power",
+  "example": "If λ = 3 for A, then A^2 has eigenvalue 9 and A^3 has 27 for the same eigenvector."
+ },
+ "s167": {
+  "about": "Adding cI shifts every eigenvalue by c: A + cI has eigenvalues λ + c, with the same eigenvectors.",
+  "symbols": "λ = eigenvalue of A\nc = scalar\nI = identity matrix",
+  "example": "If A has eigenvalue 5, then A + 2I has eigenvalue 7 for the same eigenvector."
+ },
+ "s168": {
+  "about": "Multiplying a matrix by a scalar k multiplies every eigenvalue by k as well.",
+  "symbols": "λ = eigenvalue of A\nk = scalar",
+  "example": "If A has eigenvalues 1 and -2, then 3A has eigenvalues 3 and -6."
+ },
+ "s169": {
+  "about": "Cayley-Hamilton theorem: every square matrix satisfies its own characteristic equation — substitute the matrix itself for λ and the result is the zero matrix. Two big uses: computing A^{-1} by rearranging the equation, and reducing high powers of A to lower ones.",
+  "symbols": "The characteristic equation = |A - λI| = 0 written in λ",
+  "example": "For A with rows (2 0), (0 3): characteristic equation is λ^2 - 5λ + 6 = 0, and indeed A^2 - 5A + 6I = rows (4 0), (0 9) - rows (10 0), (0 15) + rows (6 0), (0 6) = zero matrix."
+ },
+ "s170": {
+  "about": "The Taylor series rewrites a function as an infinite polynomial around a point x = a, using its derivatives at a. Maclaurin series is the same thing at a = 0. This is how calculators find sin, e^x and ln values, and how we approximate quantities like sin 31° or e^{0.1}.",
+  "symbols": "f^{n}(a) = n-th derivative of f at x = a\na = the point around which we expand\nn! = n factorial",
+  "example": "e^x around 0 gives e^x = 1 + x + x^2/2! + ... so e^{0.1} ≈ 1 + 0.1 + 0.005 + 0.000167 ≈ 1.1052 (true value 1.10517)."
+ },
+ "s174": {
+  "about": "Maclaurin expansion of sin x — only odd powers, alternating signs, x in radians. Memorise it.",
+  "symbols": "x = angle in radians\nn! = n factorial",
+  "example": "sin(0.5) ≈ 0.5 - (0.5)^3/6 + (0.5)^5/120 = 0.5 - 0.0208 + 0.00026 ≈ 0.4794 (true value 0.47943)."
+ },
+ "s175": {
+  "about": "Maclaurin expansion of cos x — only even powers, alternating signs, x in radians. Memorise it.",
+  "symbols": "x = angle in radians",
+  "example": "cos(0.5) ≈ 1 - (0.5)^2/2 + (0.5)^4/24 = 1 - 0.125 + 0.0026 ≈ 0.8776 (true value 0.87758)."
+ },
+ "s176": {
+  "about": "Maclaurin expansion of tan x — only odd powers, but the coefficients are NOT simple factorials (unlike sin and cos).",
+  "symbols": "x = angle in radians, |x| < π/2",
+  "example": "tan(0.3) ≈ 0.3 + (0.3)^3/3 + 2(0.3)^5/15 = 0.3 + 0.009 + 0.000324 ≈ 0.3093 (true value 0.30934)."
+ },
+ "s177": {
+  "about": "Maclaurin expansion of inverse tan — odd powers divided by the power itself, alternating signs.",
+  "symbols": "x = any value with |x| ≤ 1",
+  "example": "tan^{-1}(0.5) ≈ 0.5 - (0.5)^3/3 + (0.5)^5/5 = 0.5 - 0.0417 + 0.00625 ≈ 0.4646 rad (true value 0.46365)."
+ },
+ "s179": {
+  "about": "Expansion of ln(1 - x) — all signs negative, each power divided by itself. It is the ln(1 + x) series with x replaced by -x. Valid for -1 ≤ x < 1.",
+  "symbols": "x = value in the range -1 ≤ x < 1",
+  "example": "ln(0.9) with x = 0.1: -(0.1 + 0.005 + 0.000333 + ...) ≈ -0.10536 (true value -0.10536)."
+ },
+ "s180": {
+  "about": "Expansion of a^x for any base a — it is the e^x series with x replaced by x ln a.",
+  "symbols": "a = base (a > 0)\nln a = natural log of a",
+  "example": "2^{0.5}: ln 2 ≈ 0.693, so 1 + 0.5(0.693) + (0.5 x 0.693)^2/2 ≈ 1 + 0.3466 + 0.0600 ≈ 1.414 ≈ √2. Correct!"
+ },
+ "s184": {
+  "about": "Maclaurin expansion of inverse sin — odd powers with fractional coefficients (1/6, 3/40, ...).",
+  "symbols": "x = value with |x| ≤ 1\nAnswer comes out in radians",
+  "example": "sin^{-1}(0.5) ≈ 0.5 + (0.5)^3/6 + 3(0.5)^5/40 = 0.5 + 0.0208 + 0.00234 ≈ 0.523 rad = π/6. Correct!"
+ },
+ "s185": {
+  "about": "Expansion of sinh x — exactly like sin x but with ALL signs positive (no alternation).",
+  "symbols": "x = any real value\nsinh = hyperbolic sine",
+  "example": "sinh(0.5) ≈ 0.5 + (0.5)^3/6 + (0.5)^5/120 = 0.5 + 0.0208 + 0.00026 ≈ 0.5211 (true value 0.52110)."
+ },
+ "s186": {
+  "about": "Expansion of cosh x — exactly like cos x but with ALL signs positive.",
+  "symbols": "x = any real value\ncosh = hyperbolic cosine",
+  "example": "cosh(0.5) ≈ 1 + (0.5)^2/2 + (0.5)^4/24 = 1 + 0.125 + 0.0026 ≈ 1.1276 (true value 1.12763)."
+ },
+ "s187": {
+  "about": "How expansions are used in exams: to expand in powers of (x - a), either apply the Taylor formula directly with derivatives at a, or substitute t = x - a, expand in t using a standard series, then replace t back. Keep only as many terms as the question asks.",
+  "symbols": "a = the point of expansion\nt = x - a (the shifted variable)",
+  "example": "e^x in powers of (x - 1): e^x = e · e^{x-1} = e[1 + (x - 1) + (x - 1)^2/2! + ...] using the standard e^t series."
+ },
+ "s188": {
+  "about": "n-th derivative of e^{ax}: every differentiation brings down one factor of a, so after n differentiations we get a^n e^{ax}.",
+  "symbols": "D^n = n-th derivative (d^n/dx^n)\na = constant",
+  "example": "For e^{3x}, the 4th derivative is 3^4 e^{3x} = 81 e^{3x}."
+ },
+ "s189": {
+  "about": "The n-th derivative of x^n is the constant n! — each differentiation reduces the power by 1 and multiplies by the falling power, ending at n·(n-1)···1.",
+  "symbols": "D^n = n-th derivative\nn! = n factorial",
+  "example": "The 4th derivative of x^4 is 4! = 24 — check: x^4 → 4x^3 → 12x^2 → 24x → 24."
+ },
+ "s190": {
+  "about": "n-th derivative of sin(ax + b): each differentiation multiplies by a and adds π/2 to the angle. After n steps: a^n sin(ax + b + nπ/2).",
+  "symbols": "D^n = n-th derivative\na, b = constants",
+  "example": "The 2nd derivative of sin(3x): 3^2 sin(3x + π) = -9 sin(3x) — matches direct differentiation."
+ },
+ "s191": {
+  "about": "n-th derivative of cos(ax + b) — the same pattern as sin: multiply by a^n and add nπ/2 to the angle.",
+  "symbols": "D^n = n-th derivative\na, b = constants",
+  "example": "The 1st derivative of cos(2x + 1) by the formula: 2 cos(2x + 1 + π/2) = -2 sin(2x + 1). Correct."
+ },
+ "s192": {
+  "about": "n-th derivative of (ax + b)^m: the power falls like a factorial pattern m(m-1)...(m-n+1), each step also brings out one factor a, and the power drops to m - n.",
+  "symbols": "D^n = n-th derivative\nm = the original power\na, b = constants",
+  "example": "The 2nd derivative of (x + 1)^5 (a = 1, m = 5): 5 x 4 x (x + 1)^3 = 20(x + 1)^3."
+ },
+ "s193": {
+  "about": "n-th derivative of 1/(x + a): alternating sign (-1)^n, an n! on top, and the power in the denominator rises to n + 1.",
+  "symbols": "D^n = n-th derivative\na = constant",
+  "example": "The 2nd derivative of 1/(x + 3): (+1)(2!)/(x + 3)^3 = 2/(x + 3)^3 — check: 1/(x+3) → -1/(x+3)^2 → 2/(x+3)^3. Correct."
+ },
+ "s194": {
+  "about": "n-th derivative of ln(ax + b): alternating sign starting positive, (n-1)! on top, a^n from the chain rule, and (ax + b)^n below.",
+  "symbols": "D^n = n-th derivative\na, b = constants",
+  "example": "The 2nd derivative of ln(x) (a = 1, b = 0): (-1)^{1} (1!) (1) / x^2 = -1/x^2 — matches differentiating 1/x."
+ },
+ "s195": {
+  "about": "n-th derivative of e^{ax} sin(bx + c): the pair (a, b) behaves like a rotation — amplitude factor (a^2 + b^2)^{n/2} and phase shift nφ where φ = tan^{-1}(b/a). This is the hardest standard n-th derivative; learn the pattern.",
+  "symbols": "D^n = n-th derivative\nφ = tan^{-1}(b/a), the phase angle",
+  "example": "For e^x sin x (a = b = 1): φ = π/4, and the 2nd derivative is (2)^{1} e^x sin(x + π/2) = 2 e^x cos x."
+ },
+ "s196": {
+  "about": "Leibnitz's theorem gives the n-th derivative of a PRODUCT: it looks like the binomial expansion, with nCr coefficients, where the total order of differentiation across u and v always sums to n. Subscripts show the order: u_{n} means the n-th derivative of u, v (with no subscript) is undifferentiated.",
+  "symbols": "u, v = the two functions\nu_{k} = k-th derivative of u\n^{n}C_{r} = binomial coefficient",
+  "example": "2nd derivative of x^2 e^x: take u = e^x (all derivatives e^x), v = x^2: e^x·x^2 + 2·e^x·2x + e^x·2 = e^x(x^2 + 4x + 2)."
+ },
+ "s197": {
+  "about": "A homogeneous function scales uniformly: replacing (x, y) by (tx, ty) multiplies the value by t^n. Quick test: in every term, the total power of x and y together is the same number n — that n is the degree. Homogeneous functions are exactly what Euler's theorem applies to.",
+  "symbols": "n = degree of the function\nt = any scaling factor",
+  "example": "f = x^2 + 3xy + y^2: every term has total power 2, so it is homogeneous of degree 2. Check: f(2x, 2y) = 4x^2 + 12xy + 4y^2 = 4f = 2^2 f. Correct."
+ },
+ "s199": {
+  "about": "The second-order form of Euler's theorem — the weighted sum of second partial derivatives equals n(n-1)u. It follows by applying the first-order theorem to the partial derivatives themselves.",
+  "symbols": "u = homogeneous function of degree n\n∂ = partial derivative symbol",
+  "example": "For u = x^2 + y^2 (n = 2): u_{xx} = 2, u_{yy} = 2, u_{xy} = 0, so x^2(2) + 0 + y^2(2) = 2(x^2 + y^2) = 2u, and n(n-1)u = 2u. Matches."
+ },
+ "s200": {
+  "about": "Euler's theorem in disguise: when u itself is not homogeneous but F(u) is (for example u = sin^{-1}(...) where the inside is a ratio), first identify what F(u) is — here F(u) would be sin u — state its degree n, then x·u_x + y·u_y = n·F(u)/F'(u).",
+  "symbols": "F = the outer function (sin, tan, ln, ...)\nF'(u) = its derivative\nn = degree of F(u) as a homogeneous function",
+  "example": "If u = tan^{-1}((x^3 + y^3)/(x - y)), then tan u = (x^3 + y^3)/(x - y) is homogeneous of degree 2, so x·u_x + y·u_y = 2 tan u / sec^2 u = 2 sin u cos u = sin 2u."
+ },
+ "s202": {
+  "about": "The total differential dz collects the full small change in z = f(x, y): the x-contribution (∂z/∂x)dx plus the y-contribution (∂z/∂y)dy. It is the basis of error estimation.",
+  "symbols": "dz = total small change in z\ndx, dy = small changes in x and y\n∂z/∂x = partial derivative with y fixed",
+  "example": "For z = x^2 y at (2, 3): dz = 2xy dx + x^2 dy = 12 dx + 4 dy. If dx = 0.01 and dy = 0.02, dz ≈ 0.12 + 0.08 = 0.20."
+ },
+ "s203": {
+  "about": "Approximate error: the error in a computed quantity z is estimated by the total differential, replacing d with Δ (the measurement errors). Worst case: take all terms with positive signs.",
+  "symbols": "Δz = approximate error in z\nΔx, Δy = errors in measuring x and y",
+  "example": "Area A = xy with x = 10 ± 0.1, y = 5 ± 0.05: ΔA ≈ y Δx + x Δy = 5(0.1) + 10(0.05) = 1.0, so A = 50 ± 1."
+ },
+ "s206": {
+  "about": "The Jacobian J = ∂(u, v)/∂(x, y) is the determinant of the partial-derivative matrix. If J = 0 everywhere, u and v are functionally dependent (one is a function of the other); if J ≠ 0, they are independent and (x, y) can be recovered from (u, v). Also J(u,v) · J(x,y) = 1.",
+  "symbols": "J = Jacobian determinant\nu, v = functions of x and y",
+  "example": "u = x + y, v = (x + y)^2: v is literally u^2, so they are dependent — and indeed every term of J cancels to 0."
+ },
+ "s207": {
+  "about": "Method for maxima and minima of f(x, y): (1) Solve ∂f/∂x = 0 and ∂f/∂y = 0 together for stationary points. (2) At each point compute r = f_{xx}, s = f_{xy}, t = f_{yy}. (3) Decide: rt - s^2 > 0 with r < 0 gives a maximum, with r > 0 a minimum; rt - s^2 < 0 gives a saddle point (neither); rt - s^2 = 0 needs deeper investigation.",
+  "symbols": "r, s, t = the three second derivatives at the point",
+  "example": "f = x^2 + y^2: stationary point (0, 0); r = 2, s = 0, t = 2, rt - s^2 = 4 > 0 and r > 0 — a minimum, f = 0. Correct, squares are never negative."
+ },
+ "s209": {
+  "about": "The recurrence of the Gamma function: Γ(n + 1) = n·Γ(n). It lets you step any value down towards Γ(1) or Γ(1/2), whose values are known.",
+  "symbols": "Γ = Gamma function\nn = any positive real number",
+  "example": "Γ(7/2) = (5/2)·Γ(5/2) = (5/2)(3/2)Γ(3/2) = (15/4)(√π/2) = 15√π/8."
+ },
+ "s210": {
+  "about": "The anchor value Γ(1) = 1 — it agrees with the factorial bridge, since Γ(1) = 0! = 1. Every whole-number value is built by stepping up from here.",
+  "symbols": "",
+  "example": "Γ(2) = 1·Γ(1) = 1, Γ(3) = 2·Γ(2) = 2, Γ(4) = 3·2 = 6 — matching 1!, 2!, 3!."
+ },
+ "s212": {
+  "about": "For whole numbers the Gamma function is just the factorial shifted by one: Γ(n + 1) = n!. This is the bridge between factorials and the Gamma function.",
+  "symbols": "n = whole number (0, 1, 2, ...)",
+  "example": "Γ(6) = 5! = 120."
+ },
+ "s213": {
+  "about": "A useful half-value: Γ(3/2) = √π/2. It comes from Γ(1/2) = √π by one step of the recurrence.",
+  "symbols": "√π ≈ 1.772",
+  "example": "Γ(3/2) = (1/2)·Γ(1/2) = (1/2)√π = √π/2 ≈ 0.886."
+ },
+ "s214": {
+  "about": "Γ(5/2) = 3√π/4 — two recurrence steps above Γ(1/2). Half-integer values always end as a fraction times √π.",
+  "symbols": "",
+  "example": "Γ(5/2) = (3/2)·Γ(3/2) = (3/2)(√π/2) = 3√π/4 ≈ 1.329."
+ },
+ "s215": {
+  "about": "Γ(7/2) = 15√π/8 — keep stepping: each half-step multiplies by the previous n (5/2, then 3/2, then 1/2).",
+  "symbols": "",
+  "example": "Γ(7/2) = (5/2)·Γ(5/2) = (5/2)(3√π/4) = 15√π/8 ≈ 3.323."
+ },
+ "s216": {
+  "about": "The reflection formula connects Γ(n) with Γ(1 - n) — it is how values for negative and fractional arguments (like Γ(-1/2)) are found.",
+  "symbols": "n = any value that is not a whole number",
+  "example": "n = 1/4: Γ(1/4)·Γ(3/4) = π / sin(π/4) = π√2 ≈ 4.443."
+ },
+ "s217": {
+  "about": "Legendre's duplication formula relates Γ at n and n + 1/2 to Γ at 2n — mainly used to prove other results and to evaluate Beta-type integrals quickly.",
+  "symbols": "n = positive value",
+  "example": "n = 1: Γ(1)·Γ(3/2) = 1 x √π/2 = √π/2; the formula gives (√π/2^{1})·Γ(2) = √π/2. Matches."
+ },
+ "s218": {
+  "about": "The Gamma function Γ(n) = ∫ from 0 to ∞ of t^{n-1} e^{-t} dt extends the factorial beyond whole numbers. Whenever an integral has the form ∫ x^{something} e^{-x} or a sin/cos power over 0 to π/2, think Gamma and Beta.",
+  "symbols": "Γ(n) = Gamma of n\nt = the integration variable",
+  "example": "∫ from 0 to ∞ of x^4 e^{-x} dx = Γ(5) = 4! = 24 — no integration by parts needed."
+ },
+ "s220": {
+  "about": "The infinite (improper) form of the Beta function, over 0 to ∞. The trigonometric form (0 to π/2) is the one used most in this course.",
+  "symbols": "B(m, n) = Beta function\nm, n = positive values",
+  "example": "With the Gamma relation B(m, n) = Γ(m)Γ(n)/Γ(m + n): B(2, 3) = (1! x 2!)/4! = 2/24 = 1/12."
+ },
+ "s222": {
+  "about": "The Beta function is symmetric — swapping m and n changes nothing, because the defining integral is symmetric in the two parameters. Often halves the work.",
+  "symbols": "B(m, n) = Beta function",
+  "example": "B(5, 2) = B(2, 5) — compute whichever order makes the Gamma values easier."
+ },
+ "s223": {
+  "about": "The trigonometric form of Beta: integrals of sin and cos powers from 0 to π/2 are Beta functions in disguise — match the powers: sin exponent 2m - 1, cos exponent 2n - 1.",
+  "symbols": "m = (sin power + 1)/2\nn = (cos power + 1)/2",
+  "example": "∫ from 0 to π/2 of sin^3 x dx: cos power 0 gives n = 1/2, sin power 3 gives m = 2. B(2, 1/2) = Γ(2)Γ(1/2)/Γ(5/2) = (1 x √π)/(3√π/4) = 4/3; times the leading 1/2 of the trig form... the integral equals (1/2)B(2, 1/2) = 2/3. Correct by direct integration too."
+ },
+ "s224": {
+  "about": "The famous shortcut: the integral of sin^m x cos^n x from 0 to π/2 equals Γ((m+1)/2) Γ((n+1)/2) / (2 Γ((m+n+2)/2)). It swallows Wallis' formula and all sin-cos power integrals in one line — memorise it.",
+  "symbols": "m = power of sin\nn = power of cos",
+  "example": "∫ from 0 to π/2 of sin^2 x dx: m = 2, n = 0 gives Γ(3/2)Γ(1/2) / (2Γ(2)) = (√π/2)(√π)/(2 x 1) = π/4. Correct."
+ },
+ "s226": {
+  "about": "Wallis' formula for ∫ sin^n x from 0 to π/2 when n is EVEN: a descending fraction of odd numbers over even numbers, times π/2. (Cos^n gives the same values.)",
+  "symbols": "n = even power (2, 4, 6, ...)",
+  "example": "∫ from 0 to π/2 of sin^4 x dx = (3 x 1)/(4 x 2) x π/2 = 3π/16 ≈ 0.589."
+ },
+ "s227": {
+  "about": "Wallis' formula when n is ODD: a descending fraction with NO π/2 factor at the end — the missing π/2 is the only difference from the even case, and the most common slip.",
+  "symbols": "n = odd power (3, 5, 7, ...)",
+  "example": "∫ from 0 to π/2 of sin^5 x dx = (4 x 2)/(5 x 3) = 8/15 ≈ 0.533."
+ },
+ "s228": {
+  "about": "A famous result worth quoting directly: the integral of ln(sin x) from 0 to π/2 equals -(π/2) ln 2. It is proved using the symmetry property ∫ f = ∫ f(a - x).",
+  "symbols": "ln = natural logarithm",
+  "example": "Numerically: -(π/2)(0.693) ≈ -1.088. The integral is negative because sin x < 1 on the interval, so ln(sin x) < 0."
+ },
+ "s230": {
+  "about": "For a symmetric interval -a to a: even functions double the 0-to-a integral; odd functions cancel to zero. Check f(-x) before integrating anything.",
+  "symbols": "Even: f(-x) = f(x), like x^2, cos x\nOdd: f(-x) = -f(x), like x^3, sin x",
+  "example": "∫ from -1 to 1 of x^3 dx = 0 instantly (odd), and ∫ from -π/2 to π/2 of cos x dx = 2 x 1 = 2 (even)."
+ },
+ "s231": {
+  "about": "The 0 to 2a property: if f(2a - x) = f(x) the integral doubles the 0-to-a part; if f(2a - x) = -f(x) it vanishes. It is the -a to a property shifted.",
+  "symbols": "a = half the interval length",
+  "example": "∫ from 0 to 2π of sin x dx: sin(2π - x) = -sin x, so the integral is 0 — the positive and negative halves cancel."
+ },
+ "s232": {
+  "about": "The 'King' property: ∫ from 0 to a of f(x) dx equals ∫ from 0 to a of f(a - x) dx. Adding the two forms often makes impossible-looking integrals trivial — the standard trick for ∫ x sin x / (1 + cos^2 x) type questions.",
+  "symbols": "a = upper limit",
+  "example": "I = ∫ from 0 to π/2 of sin x/(sin x + cos x) dx. By the property, I also equals the cos version; adding: 2I = ∫ 1 dx = π/2, so I = π/4."
+ },
+ "s233": {
+  "about": "Swapping the limits of a definite integral flips its sign. Integration from a to b is the negative of integration from b to a.",
+  "symbols": "a, b = the two limits",
+  "example": "If ∫ from 1 to 4 of f = 10, then ∫ from 4 to 1 of f = -10."
+ },
+ "s234": {
+  "about": "An integral with equal limits is zero — there is no interval, so no area accumulates.",
+  "symbols": "",
+  "example": "∫ from 3 to 3 of (x^5 + sin x) dx = 0, whatever the function is."
+ },
+ "s235": {
+  "about": "Splitting intervals: the integral from a to b equals the integral a to c plus c to b, for any c in between (even outside, with care). Essential for modulus and piecewise functions — split at the sign-change points.",
+  "symbols": "c = any splitting point",
+  "example": "∫ from -1 to 2 of |x| dx: split at 0: ∫ from -1 to 0 of (-x) dx + ∫ from 0 to 2 of x dx = 0.5 + 2 = 2.5."
+ },
+ "s236": {
+  "about": "The a/2 shortcut: ∫ from 0 to a of f(x)/(f(x) + f(a - x)) dx always equals a/2, whatever f is (as long as the denominator never vanishes). Pure property work — no integration at all.",
+  "symbols": "a = upper limit\nf = any suitable function",
+  "example": "∫ from 0 to π/2 of sin x/(sin x + cos x) dx = (π/2)/2 = π/4 — the same answer the King property gave."
+ },
+ "s237": {
+  "about": "A double integral ∬ f(x, y) dA is the volume under the surface z = f(x, y) above the region R; with f = 1 it gives the area of R. Evaluation is iterated: hold one variable, integrate w.r.t. the other, then integrate the result. The limits must describe R carefully — sketch the region first.",
+  "symbols": "R = region in the xy-plane\ndA = dx dy (area element)",
+  "example": "∬ over the unit square of (x + y) dA = ∫ from 0 to 1 [∫ from 0 to 1 (x + y) dy] dx = ∫ from 0 to 1 (x + 1/2) dx = 1."
+ },
+ "s240": {
+  "about": "Area between two curves: integrate (top curve minus bottom curve). Find the intersection points first — they usually give the limits a and b.",
+  "symbols": "f = upper curve\ng = lower curve\na, b = intersection x-values",
+  "example": "Between y = x and y = x^2 (they meet at 0 and 1; the line is on top): A = ∫ from 0 to 1 (x - x^2) dx = 1/2 - 1/3 = 1/6."
+ },
+ "s241": {
+  "about": "Changing a double integral to polar coordinates: x = r cos θ, y = r sin θ, and dx dy becomes r dr dθ. The extra r is the Jacobian — forgetting it is the most common error in this topic. Use polar whenever the region is a circle or the function contains x^2 + y^2.",
+  "symbols": "r = distance from origin\nθ = angle from the x-axis",
+  "example": "Area of a circle radius R: ∫ θ from 0 to 2π ∫ r from 0 to R of r dr dθ = 2π x R^2/2 = πR^2. Correct."
+ },
+ "s242": {
+  "about": "A triple integral extends the idea to a solid: ∭ f dV with f = 1 gives the volume. Evaluate as three nested single integrals; for spheres and cylinders switch to spherical or cylindrical coordinates.",
+  "symbols": "V = the solid region\ndV = dx dy dz (volume element)",
+  "example": "Volume of a box 2 x 3 x 4: ∭ 1 dV = 2 x 3 x 4 = 24 — the triple integral just multiplies the three side lengths."
+ },
+ "s244": {
+  "about": "Spherical polar coordinates for triple integrals: best for spheres. The volume element is r^2 sin φ dr dφ dθ — the r^2 sin φ factor is the Jacobian and must not be dropped.",
+  "symbols": "r = distance from origin\nφ = angle down from the z-axis (0 to π)\nθ = angle around the z-axis (0 to 2π)",
+  "example": "Volume of a sphere radius R: ∫∫∫ r^2 sin φ dr dφ dθ = (R^3/3) x 2 x 2π = (4/3)πR^3. Correct."
+ },
+ "s245": {
+  "about": "Cylindrical polar coordinates: polar in the xy-plane, z unchanged. Volume element r dr dθ dz — best for cylinders and paraboloids.",
+  "symbols": "r, θ = polar coordinates in the plane\nz = height as usual",
+  "example": "Volume of a cylinder radius R, height h: ∫∫∫ r dr dθ dz = (R^2/2) x 2π x h = πR^2 h. Correct."
+ },
+ "s246": {
+  "about": "The area under a curve y = f(x) from a to b is the definite integral of y dx — provided the curve stays above the x-axis; where it dips below, the integral subtracts, so split the range for total geometric area.",
+  "symbols": "A = area\na, b = the x-limits",
+  "example": "Area under y = x^2 from 0 to 2: ∫ x^2 dx = 8/3 ≈ 2.67."
+ },
+ "s247": {
+  "about": "Order of a differential equation = the order of its highest derivative; degree = the power of that highest derivative after the equation is made polynomial in the derivatives. The general solution of an n-th order equation contains exactly n arbitrary constants — that count is a quick check on any answer.",
+  "symbols": "y' = dy/dx (first derivative)\ny'' = second derivative\nC = arbitrary constant",
+  "example": "y'' + 5y' + 6y = 0 has order 2, degree 1, and its solution y = C1 e^{-2x} + C2 e^{-3x} carries exactly 2 constants. Correct."
+ },
+ "s249": {
+  "about": "A homogeneous first-order equation: dy/dx depends only on the ratio y/x. Substitute y = vx; then dy/dx = v + x dv/dx, and the equation always becomes separable in v and x. Homogeneous here means every term has the same total degree — check before choosing this method.",
+  "symbols": "v = the new variable, y = vx",
+  "example": "dy/dx = (x + y)/x = 1 + y/x. With y = vx: v + x dv/dx = 1 + v, so x dv/dx = 1, v = ln x + C, giving y = x ln x + Cx."
+ },
+ "s250": {
+  "about": "An equation M dx + N dy = 0 is exact when ∂M/∂y = ∂N/∂x — it means M dx + N dy is the total differential of some function, so the solution comes straight from integrating, no integrating factor needed.",
+  "symbols": "M = coefficient of dx (a function of x, y)\nN = coefficient of dy",
+  "example": "(2xy + 3) dx + (x^2 + 4y) dy = 0: ∂M/∂y = 2x and ∂N/∂x = 2x — equal, so the equation is exact."
+ },
+ "s251": {
+  "about": "Solution of an exact equation: integrate M with respect to x (y held constant), then add the integral of only those terms of N that do NOT contain x, and set the total equal to C. Integrating the full N would double-count.",
+  "symbols": "M, N = the coefficients of dx and dy\nC = arbitrary constant",
+  "example": "Continuing (2xy + 3) dx + (x^2 + 4y) dy = 0: ∫M dx = x^2 y + 3x; from N only 4y has no x: ∫4y dy = 2y^2. Solution: x^2 y + 3x + 2y^2 = C."
+ },
+ "s253": {
+  "about": "Solving a linear first-order equation dy/dx + P y = Q, step by step: (1) force the coefficient of dy/dx to be exactly 1; (2) read off P and compute the integrating factor IF = e^{∫P dx}; (3) the solution is y·IF = ∫ Q·IF dx + C. If the equation is linear in x instead (dx/dy + P x = Q), swap the roles of x and y.",
+  "symbols": "P, Q = functions of x only (after step 1)\nIF = integrating factor",
+  "example": "dy/dx + 2y = e^x: IF = e^{2x}. Then y e^{2x} = ∫ e^{3x} dx + C = e^{3x}/3 + C, so y = e^x/3 + C e^{-2x}."
+ },
+ "s257": {
+  "about": "Complementary function when the auxiliary equation has an EQUAL (repeated) root m: the second solution picks up a factor x — y = (C1 + C2 x) e^{mx}. A triple root adds an x^2 term as well.",
+  "symbols": "m = the repeated root\nC1, C2 = arbitrary constants",
+  "example": "y'' - 4y' + 4y = 0: auxiliary equation m^2 - 4m + 4 = (m - 2)^2 = 0, root 2 repeated. Solution: y = (C1 + C2 x) e^{2x}."
+ },
+ "s258": {
+  "about": "Complementary function for complex roots α ± iβ: the answer is real — e^{αx}(C1 cos βx + C2 sin βx). If the same pair repeats, multiply the bracket by (C3 + C4 x) and add.",
+  "symbols": "α = real part of the root\nβ = imaginary part (β > 0)",
+  "example": "y'' + 4y = 0: roots ± 2i, so α = 0, β = 2, and y = C1 cos 2x + C2 sin 2x."
+ },
+ "s259": {
+  "about": "Purely imaginary roots ± iβ are the complex case with α = 0, so the e^{αx} factor is just 1 and the solution is a pure oscillation C1 cos βx + C2 sin βx — nothing grows or decays.",
+  "symbols": "β = the imaginary part",
+  "example": "y'' + 9y = 0 gives y = C1 cos 3x + C2 sin 3x — simple harmonic motion."
+ },
+ "s260": {
+  "about": "If the auxiliary equation has the root 0 twice (the equation is just y'' = 0 after removing other terms), the complementary function is a straight line: C1 + C2 x.",
+  "symbols": "C1, C2 = arbitrary constants",
+  "example": "y'' = 0 integrates directly: y' = C2, then y = C1 + C2 x."
+ },
+ "s262": {
+  "about": "PI for e^{ax} when the straight rule fails because f(a) = 0 (a is a root of the auxiliary equation): multiply by x and divide by f'(a) instead. If f'(a) is also 0, repeat with x^2/2! and f''(a).",
+  "symbols": "f(D) = the operator polynomial\nf(a) = it with D replaced by a",
+  "example": "(D - 2) y = e^{2x}: f(2) = 0, f'(D) = 1 so f'(2) = 1. PI = x · e^{2x}/1 = x e^{2x}."
+ },
+ "s263": {
+  "about": "PI for sin ax or cos ax: if the operator is a function of D^2 only, replace D^2 by -a^2 and simplify. If the denominator becomes 0 (failure), multiply by x and differentiate the operator with respect to D, then proceed.",
+  "symbols": "D = d/dx operator\na = the frequency in sin ax / cos ax",
+  "example": "PI of sin 2x for 1/(D^2 + 4): replace D^2 by -4 → denominator 0 — failure case. Multiply by x and differentiate: PI = x · 1/(2D) sin 2x = -x cos 2x / 4... precisely x/(2D) applied to sin 2x gives -x cos(2x)/4."
+ },
+ "s264": {
+  "about": "PI for a polynomial x^m: expand 1/f(D) as a series in ascending powers of D using the binomial expansion, act term by term, and stop — every derivative beyond the m-th is zero on x^m, so the answer terminates.",
+  "symbols": "D = d/dx operator\nm = degree of the polynomial",
+  "example": "PI of x for 1/(D + 1) = (1 + D)^{-1} = 1 - D + ... : (1 - D)(x) = x - 1. So PI = x - 1."
+ },
+ "s265": {
+  "about": "The shift theorem: for e^{ax} times another function V, pull e^{ax} outside and shift every D inside to (D + a). Then the remaining 1/f(D + a) acts only on V by the other PI rules.",
+  "symbols": "V = the function multiplied by e^{ax}\nD = d/dx operator",
+  "example": "PI of e^{2x} sin x for 1/(D^2 + 1): e^{2x} · 1/((D + 2)^2 + 1) sin x = e^{2x} · 1/(D^2 + 4D + 5) sin x; replace D^2 by -1: e^{2x} · 1/(4D + 4) sin x = e^{2x}(sin x - cos x)/8."
+ },
+ "s266": {
+  "about": "The Euler-Cauchy equation: x^2 y'' + a x y' + b y = 0 (or with a function on the right). Recognition mark: the power of x in each coefficient exactly matches the order of the derivative it multiplies. It is NOT constant-coefficient until transformed.",
+  "symbols": "a, b = constants\nD = d/dx",
+  "example": "x^2 y'' + 3x y' + y = 0 is Euler-Cauchy: the x^2 matches y'', the x^1 matches y', and y has x^0."
+ },
+ "s267": {
+  "about": "Solving Euler-Cauchy: substitute x = e^z (so z = ln x). Then xD becomes the new operator θ = d/dz, and x^2 D^2 becomes θ(θ - 1). The equation turns into a constant-coefficient equation in z — solve it, then put z = ln x back at the end.",
+  "symbols": "θ = d/dz, the operator in z\nz = ln x",
+  "example": "x^2 y'' + 3x y' + y = 0 becomes [θ(θ - 1) + 3θ + 1] y = (θ + 1)^2 y = 0, root -1 repeated: y = (C1 + C2 z) e^{-z} = (C1 + C2 ln x)/x."
+ },
+ "s268": {
+  "about": "Powers of i cycle with period 4: i, -1, -i, 1, then repeat. To simplify i^n, divide n by 4 and use the remainder.",
+  "symbols": "i = √(-1), the imaginary unit",
+  "example": "i^{17}: 17 = 4 x 4 + 1, remainder 1, so i^{17} = i^1 = i. And i^{2026}: remainder 2, so i^{2026} = -1."
+ },
+ "s271": {
+  "about": "A complex number times its conjugate gives the squared modulus — a real number. This is how division is done: multiply top and bottom by the conjugate of the bottom.",
+  "symbols": "z = x + iy\nz̄ = x - iy (the conjugate)\n|z| = √(x^2 + y^2) (the modulus)",
+  "example": "z = 3 + 4i: z·z̄ = (3 + 4i)(3 - 4i) = 9 + 16 = 25 = |z|^2, since |z| = 5."
+ },
+ "s272": {
+  "about": "Modulus of a product is the product of the moduli — lengths multiply when complex numbers multiply (and arguments add).",
+  "symbols": "z_{1}, z_{2} = two complex numbers",
+  "example": "|(1 + i)(√3 + i)| = |1 + i| x |√3 + i| = √2 x 2 = 2√2 ≈ 2.83 — much faster than multiplying out first."
+ },
+ "s273": {
+  "about": "Modulus of a quotient is the quotient of the moduli (denominator non-zero).",
+  "symbols": "z_{1}, z_{2} = two complex numbers, z_{2} ≠ 0",
+  "example": "|(3 + 4i)/(1 + i)| = 5/√2 ≈ 3.54."
+ },
+ "s274": {
+  "about": "The triangle inequality: the modulus of a sum never exceeds the sum of the moduli — geometrically, one side of a triangle is shorter than the other two together. Equality holds when both numbers point in the same direction.",
+  "symbols": "z_{1}, z_{2} = two complex numbers",
+  "example": "z1 = 3 + 4i (|z1| = 5), z2 = 5 + 12i (|z2| = 13): |z1 + z2| = |8 + 16i| = √320 ≈ 17.9 ≤ 18 = 5 + 13. Correct."
+ },
+ "s275": {
+  "about": "The argument is the angle the number makes with the positive x-axis. tan^{-1}(y/x) alone gives the reference angle — always correct it for the quadrant of the point (x, y); the principal value lies in (-π, π].",
+  "symbols": "arg z = argument (angle) of z\nx = real part\ny = imaginary part",
+  "example": "z = -1 + i is in the 2nd quadrant: reference angle tan^{-1}(1) = π/4, so arg z = π - π/4 = 3π/4. (Using the raw calculator value -π/4 would be wrong.)"
+ },
+ "s276": {
+  "about": "The polar form writes z using its length r and angle θ instead of x and y: z = r(cos θ + i sin θ), also written r e^{iθ}. Multiplication, powers and roots are all easiest in this form.",
+  "symbols": "r = |z|, the modulus\nθ = arg z, the argument",
+  "example": "z = 1 + i: r = √2, θ = π/4, so z = √2 (cos(π/4) + i sin(π/4)) = √2 e^{iπ/4}."
+ },
+ "s279": {
+  "about": "f(z) = u + iv is analytic in a region if it is differentiable at every point there. The working test is the Cauchy-Riemann equations u_x = v_y and u_y = -v_x (with continuous partials). Polynomials are analytic everywhere; 1/z is analytic except at 0; z̄, Re z, |z| are analytic nowhere — a favourite exam classification.",
+  "symbols": "u = real part of f\nv = imaginary part of f\nu_x = ∂u/∂x, etc.",
+  "example": "f(z) = z^2: u = x^2 - y^2, v = 2xy. u_x = 2x = v_y and u_y = -2y = -v_x — C-R holds everywhere, so z^2 is entire (analytic everywhere)."
+ },
+ "s281": {
+  "about": "The Cauchy-Riemann equations in polar coordinates — needed when u and v are given in terms of r and θ. The 1/r factors are easy to forget; both equations carry exactly one.",
+  "symbols": "r, θ = polar coordinates\nu, v = real and imaginary parts",
+  "example": "If u = ln r and v = θ (this is log z): ∂u/∂r = 1/r and (1/r)∂v/∂θ = 1/r — first equation holds; similarly the second. So log z is analytic (away from 0 and the negative x-axis)."
+ },
+ "s282": {
+  "about": "Once C-R holds, the derivative f'(z) can be computed from ANY of these forms — pick whichever partials are easiest. It also means f'(z) is the same from every direction, the heart of complex differentiability.",
+  "symbols": "f'(z) = derivative of f at z\nu_x = ∂u/∂x, v_x = ∂v/∂x, etc.",
+  "example": "For f = z^2 (u = x^2 - y^2, v = 2xy): f'(z) = u_x + i v_x = 2x + i(2y) = 2(x + iy) = 2z. Correct."
+ },
+ "s283": {
+  "about": "A function is harmonic if it satisfies Laplace's equation u_{xx} + u_{yy} = 0. If f = u + iv is analytic, both u and v are automatically harmonic, and v is called the harmonic conjugate of u — finding it (by integrating the C-R equations, or by Milne-Thomson) is the standard Unit 5 problem.",
+  "symbols": "u, v = real and imaginary parts of an analytic function",
+  "example": "u = x^2 - y^2: u_{xx} = 2, u_{yy} = -2, sum = 0 — harmonic. Its conjugate is v = 2xy (+ constant), rebuilding f(z) = z^2."
+ },
+ "s284": {
+  "about": "A line (contour) integral ∫ f(z) dz along a curve C: evaluate by parametrising the curve, z = z(t), and converting to an ordinary integral in t — or shortcut with Cauchy's theorems when the curve is closed.",
+  "symbols": "C = the path of integration\nz(t) = a parametrisation of C",
+  "example": "∫ along the straight line from 0 to 1 + i of z dz: parametrise z = (1 + i)t, dz = (1 + i) dt, t from 0 to 1: (1 + i)^2 ∫ t dt = (2i)(1/2) = i."
+ },
+ "s285": {
+  "about": "The ML-inequality bounds a line integral: its modulus is at most M (the largest value of |f| on the curve) times L (the length of the curve). Used to show integrals vanish or to estimate them, not to compute exact values.",
+  "symbols": "M = maximum of |f(z)| on C\nL = length of the curve C",
+  "example": "|∫ over |z| = 1 of dz/(z^2 + 2)| ≤ M·L: on |z| = 1, |z^2 + 2| ≥ 2 - 1 = 1 so M = 1, L = 2π, giving the bound 2π."
+ },
+ "s286": {
+  "about": "Cauchy's integral theorem: if f is analytic in a simply connected region, the integral around EVERY closed curve in it is zero — no singularities inside means nothing accumulates. Most Unit 5 closed integrals are settled by checking analyticity first.",
+  "symbols": "∮ = integral around a closed curve\nC = the closed curve",
+  "example": "∮ over |z| = 1 of z^3 dz = 0, because z^3 is analytic everywhere — no need to parametrise."
+ },
+ "s287": {
+  "about": "The one basic non-zero closed integral: ∮ dz/(z - a) = 2πi if the point a lies inside the curve, and 0 if a is outside. Everything in Cauchy's formula family is built on this.",
+  "symbols": "a = the centre (singular point)\nC = closed curve, traversed once anticlockwise",
+  "example": "∮ over |z| = 2 of dz/(z - 1): the point 1 is inside |z| = 2, so the value is 2πi. Around |z| = 2, dz/(z - 3) gives 0, since 3 is outside."
+ },
+ "s288": {
+  "about": "For higher powers n ≥ 2, ∮ dz/(z - a)^n = 0 even when a is inside — because 1/(z - a)^n has an antiderivative there (unlike the n = 1 case, which produces the log and the 2πi).",
+  "symbols": "n = integer power, n ≥ 2\na = the singular point",
+  "example": "∮ over |z| = 1 of dz/z^5 = 0 — only the 1/(z - a) term ever contributes 2πi."
+ },
+ "s290": {
+  "about": "Cauchy's formula for derivatives: the n-th derivative at a point inside C is an integral around C — values of f on the boundary determine all derivatives inside. In problems, rearrange the integrand to match f(z)/(z - a)^{n+1} and read off the answer.",
+  "symbols": "f^{(n)}(a) = n-th derivative of f at a\nn! = n factorial",
+  "example": "∮ over |z| = 2 of e^z/(z - 1)^3 dz: here n = 2, f = e^z, a = 1, so the integral = (2πi/2!) f''(1) = πi · e = πei."
+ },
+ "s291": {
+  "about": "The Unit 5 problem recipe: (1) factor the denominator and find the singular points; (2) test which lie inside the given curve (|z - a| < radius); (3) points outside contribute nothing; (4) rewrite the integrand with partial fractions so each piece matches Cauchy's formula or the derivative formula; (5) add the contributions. Analytic integrands give 0 immediately.",
+  "symbols": "|z - a| < r = point a is inside the circle of radius r",
+  "example": "∮ over |z| = 2 of dz/(z^2 - 1): poles at ±1, both inside. Partial fractions give (1/2)[1/(z - 1) - 1/(z + 1)], each contributes 2πi, total (1/2)(2πi - 2πi) = 0."
  }
 }

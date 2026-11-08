@@ -109,6 +109,7 @@ class _AiTutorPageState extends State<AiTutorPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryDark,
+        flexibleSpace: Container(decoration: kBarDecoration),
         foregroundColor: Colors.white,
         title: const Text('AI Tutor', style: TextStyle(fontSize: 17)),
       ),

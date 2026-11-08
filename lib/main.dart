@@ -16,6 +16,92 @@ const String kApiUrl = 'https://yashx.xyz/math-formula-sheet-m1/api/formulas';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
+const String kDisplayFont = 'Space Grotesk';
+const LinearGradient kBrandGradient = LinearGradient(
+  colors: [Color(0xFF2A1A5E), Color(0xFF4338CA), Color(0xFF7C3AED)],
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+);
+const BoxDecoration kBarDecoration = BoxDecoration(gradient: kBrandGradient);
+const LinearGradient kAccentGradient = LinearGradient(
+  colors: [Color(0xFF4338CA), Color(0xFF8B5CF6)],
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+);
+const LinearGradient kAmberGradient = LinearGradient(
+  colors: [Color(0xFFF59E0B), Color(0xFFF97316)],
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+);
+
+/// Display style for formulas and headings — Space Grotesk with Inter as
+/// fallback for any glyph it lacks (some superscript letters).
+TextStyle displayStyle({
+  double size = 16,
+  FontWeight weight = FontWeight.w600,
+  Color? color,
+  double height = 1.4,
+}) {
+  return TextStyle(
+    fontFamily: kDisplayFont,
+    fontFamilyFallback: const ['Inter'],
+    fontSize: size,
+    fontWeight: weight,
+    color: color,
+    height: height,
+  );
+}
+
+/// One-time entrance animation (fade + rise) for list cards — each entry
+/// animates only the first time it appears in a session.
+class Entrance extends StatefulWidget {
+  final String id;
+  final Widget child;
+  const Entrance({super.key, required this.id, required this.child});
+
+  @override
+  State<Entrance> createState() => _EntranceState();
+}
+
+class _EntranceState extends State<Entrance>
+    with SingleTickerProviderStateMixin {
+  static final Set<String> _seen = {};
+  AnimationController? _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_seen.contains(widget.id)) {
+      _seen.add(widget.id);
+      _ctrl = AnimationController(
+          vsync: this, duration: const Duration(milliseconds: 380))
+        ..forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = _ctrl;
+    if (c == null) return widget.child;
+    return AnimatedBuilder(
+      animation: c,
+      child: widget.child,
+      builder: (context, child) {
+        final t = Curves.easeOutCubic.transform(c.value);
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(offset: Offset(0, 16 * (1 - t)), child: child),
+        );
+      },
+    );
+  }
+}
 
 void main() {
   runApp(const FormulaApp());
@@ -307,11 +393,15 @@ String formulaTextToPlain(String input) {
   return out.toString().replaceAll(RegExp(r'[ \t]+'), ' ').trim();
 }
 
+final RegExp _htmlTagRe = RegExp(r'</?(span|sup|sub|p|b|i|div|br)[\s>/]');
+
 /// Renders any stored body/text (HTML for built-in entries, FormulaText for
 /// user entries and detail fields) as clean book-style plain text.
+/// Note: a plain "<" (as in "D < 0") must NOT trigger the HTML path — only
+/// real tags do, otherwise caret powers like x^{2} leak through raw.
 String displayText(String s) {
   final n = s.replaceAll('\\n', '\n');
-  if (n.contains('<')) return cleanBody(n);
+  if (_htmlTagRe.hasMatch(n) || n.contains('&nbsp;')) return cleanBody(n);
   return formulaTextToPlain(n);
 }
 
@@ -342,6 +432,59 @@ String fmtIst(String iso) {
   h = h % 12 == 0 ? 12 : h % 12;
   final mm = ist.minute.toString().padLeft(2, '0');
   return '${ist.day} ${_months[ist.month - 1]} ${ist.year}, $h:$mm $ampm IST';
+}
+
+final Map<String, String> _revSup = {
+  for (final e in _supMap.entries) e.value: e.key
+};
+final Map<String, String> _revSub = {
+  for (final e in _subMap.entries) e.value: e.key
+};
+
+/// Search skeleton: flattens a formula or a typed query into one comparable
+/// string — spaces removed, superscripts/subscripts folded to their base
+/// letters, ^ _ { } dropped, × read as x, π as pi, √ as sqrt. This is what
+/// lets "(a+b)²", "(a+b)^2" and "a+b2" all find the same entry.
+String skeleton(String s) {
+  final buf = StringBuffer();
+  for (final ch in s.split('')) {
+    if (ch == ' ' || ch == '\n' || ch == '\t') continue;
+    final sup = _revSup[ch];
+    if (sup != null) {
+      buf.write(sup);
+      continue;
+    }
+    final sub = _revSub[ch];
+    if (sub != null) {
+      buf.write(sub);
+      continue;
+    }
+    switch (ch) {
+      case '^':
+      case '_':
+      case '{':
+      case '}':
+        continue;
+      case '−':
+        buf.write('-');
+        continue;
+      case '×':
+        buf.write('x');
+        continue;
+      case '·':
+      case '•':
+        continue;
+      case 'π':
+        buf.write('pi');
+        continue;
+      case '√':
+        buf.write('sqrt');
+        continue;
+      default:
+        buf.write(ch.toLowerCase());
+    }
+  }
+  return buf.toString();
 }
 
 /// Shares an entry (system share sheet where available, clipboard fallback).
@@ -447,6 +590,20 @@ class FormulaApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: kPrimary),
         useMaterial3: true,
+        fontFamily: 'Inter',
+        scaffoldBackgroundColor: const Color(0xFFF6F5FB),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: Colors.white,
+          indicatorColor: const Color(0xFFE3DEFA),
+          labelTextStyle: WidgetStateProperty.all(const TextStyle(
+              fontFamily: kDisplayFont,
+              fontSize: 12,
+              fontWeight: FontWeight.w600)),
+          iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+              color: states.contains(WidgetState.selected)
+                  ? kPrimary
+                  : Colors.black54)),
+        ),
       ),
       home: const MainShell(),
     );
@@ -614,9 +771,10 @@ class _HomePageState extends State<HomePage> {
       final catTitle = {
         for (final c in data.categories) c.slug: c.title.toLowerCase()
       };
-      String indexOf(EntryItem e) =>
-          '${e.name} ${e.section} ${catTitle[e.category] ?? ''} ${displayText(e.body)}'
-              .toLowerCase();
+      // 1) Formula-shaped queries ("(a+b)²", "(a+b)^2", "a2+b2") match on the
+      // flattened skeleton of the name + formula text.
+      final qSkel = skeleton(raw);
+      // 2) Word queries rank by WHERE the words hit: name > section > body.
       const stopwords = {'of', 'the', 'a', 'an', 'and', 'for', 'to', 'in'};
       final tokens = raw
           .split(RegExp(r'\s+'))
@@ -625,21 +783,44 @@ class _HomePageState extends State<HomePage> {
               (t.length > 3 && t.endsWith('s')) ? t.substring(0, t.length - 1) : t)
           .where((t) => t.length >= 2)
           .toList();
-      if (tokens.isNotEmpty) {
-        final scored = list.map((e) {
-          final text = indexOf(e);
-          final hits = tokens.where((t) => text.contains(t)).length;
-          return (e, hits);
-        }).toList();
-        final all = scored.where((s) => s.$2 == tokens.length).toList();
-        if (all.isNotEmpty) {
-          list = all.map((s) => s.$1).toList();
-        } else {
-          final some = scored.where((s) => s.$2 > 0).toList()
-            ..sort((a, b) => b.$2.compareTo(a.$2));
-          list = some.map((s) => s.$1).toList();
+
+      final scored = <(EntryItem, int, int, int)>[]; // entry, skelHit, matched, score
+      for (final e in list) {
+        final name = displayName(e, _details).toLowerCase();
+        final mid = '${e.section} ${catTitle[e.category] ?? ''}'.toLowerCase();
+        final body = displayText(e.body).toLowerCase();
+        final skelHit = (qSkel.length >= 3 &&
+                skeleton('$name $body').contains(qSkel))
+            ? 1
+            : 0;
+        var matched = 0;
+        var score = 0;
+        for (final t in tokens) {
+          var hit = false;
+          if (name.contains(t)) {
+            score += 3;
+            hit = true;
+          }
+          if (mid.contains(t)) {
+            score += 2;
+            hit = true;
+          }
+          if (body.contains(t)) {
+            score += 1;
+            hit = true;
+          }
+          if (hit) matched++;
+        }
+        if (skelHit == 1 || matched > 0) {
+          scored.add((e, skelHit, matched, score));
         }
       }
+      scored.sort((a, b) {
+        if (a.$2 != b.$2) return b.$2.compareTo(a.$2); // skeleton hits first
+        if (a.$3 != b.$3) return b.$3.compareTo(a.$3); // then most words hit
+        return b.$4.compareTo(a.$4); // then best-weighted score
+      });
+      list = scored.map((s) => s.$1).toList();
     }
     return list;
   }
@@ -652,6 +833,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryDark,
+        flexibleSpace: Container(decoration: kBarDecoration),
         foregroundColor: Colors.white,
         title: const Text('Maths Formula Sheet'),
         actions: [
@@ -679,17 +861,47 @@ class _HomePageState extends State<HomePage> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search formulas… e.g. Quadratic equations',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      isDense: true,
-                    ),
-                    onChanged: (v) => setState(() => _query = v),
+                Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(gradient: kBrandGradient),
+                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Find any formula.',
+                          style: displayStyle(
+                              size: 25,
+                              weight: FontWeight.w700,
+                              color: Colors.white)),
+                      const SizedBox(height: 3),
+                      Text(
+                        '${data.entries.length} formulas with meaning, symbols and solved examples · Basics + Maths-I Units 1–5',
+                        style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12.5,
+                            height: 1.4),
+                      ),
+                      const SizedBox(height: 13),
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search… try (a+b)² or Quadratic',
+                          hintStyle:
+                              const TextStyle(color: Colors.black38, fontSize: 14),
+                          prefixIcon:
+                              const Icon(Icons.search, color: kPrimary),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                        ),
+                        onChanged: (v) => setState(() => _query = v),
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(
@@ -884,97 +1096,147 @@ class _HomePageState extends State<HomePage> {
         .map((c) => c.title)
         .firstOrNull;
     final isTheory = e.kind == 'theory';
-    return Card(
-      elevation: 0.6,
-      margin: const EdgeInsets.only(bottom: 9),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(
+    void openDetail() => Navigator.of(context).push(MaterialPageRoute(
           builder: (_) => DetailPage(
-              entry: e, categoryTitle: catTitle ?? e.category, details: _details),
-        )),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 11, 6, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              entry: e,
+              categoryTitle: catTitle ?? e.category,
+              details: _details),
+        ));
+    return Entrance(
+      id: e.id,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+                color: Color(0x143D2C8F), blurRadius: 12, offset: Offset(0, 4)),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            onTap: openDetail,
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Container(
+                    width: 4.5,
+                    decoration: BoxDecoration(
+                        gradient: isTheory ? kAmberGradient : kAccentGradient),
+                  ),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(displayName(e, _details),
-                            style: const TextStyle(
-                                fontSize: 15.5, fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 2),
-                        Text(
-                          [
-                            if (catTitle != null) catTitle,
-                            if (e.section.isNotEmpty) e.section,
-                          ].join(' · '),
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.black45),
-                        ),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(13, 12, 8, 9),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(displayName(e, _details),
+                                        style: displayStyle(
+                                            size: 16.5,
+                                            weight: FontWeight.w700,
+                                            color:
+                                                const Color(0xFF1E1B4B))),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      [
+                                        if (catTitle != null) catTitle,
+                                        if (e.section.isNotEmpty) e.section,
+                                      ].join(' · '),
+                                      style: const TextStyle(
+                                          fontSize: 11.5,
+                                          color: Colors.black45),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              _kindBadge(isTheory),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          // Theory entries show their FULL text in the list;
+                          // formulas get a compact preview.
+                          Text(
+                            displayText(e.body),
+                            maxLines: isTheory ? null : 3,
+                            overflow: isTheory
+                                ? TextOverflow.visible
+                                : TextOverflow.ellipsis,
+                            style: isTheory
+                                ? const TextStyle(
+                                    fontSize: 14,
+                                    height: 1.5,
+                                    color: Colors.black87)
+                                : displayStyle(
+                                    size: 15.5,
+                                    weight: FontWeight.w500,
+                                    color: const Color(0xFF26215C),
+                                    height: 1.45),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              if (e.userAdded && e.authorName.isNotEmpty)
+                                Expanded(
+                                  child: Text('by ${e.authorName}',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                          fontSize: 11.5,
+                                          color: Colors.black38)),
+                                )
+                              else
+                                const Spacer(),
+                              IconButton(
+                                icon: const Icon(Icons.share_outlined,
+                                    size: 19),
+                                color: kPrimary,
+                                tooltip: 'Share',
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () =>
+                                    shareEntry(context, e, _details),
+                              ),
+                              Material(
+                                color: kPrimary,
+                                borderRadius: BorderRadius.circular(20),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: openDetail,
+                                  child: const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 13, vertical: 6),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text('View',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12.5,
+                                                fontWeight: FontWeight.w600)),
+                                        Icon(Icons.chevron_right,
+                                            size: 16, color: Colors.white),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  _kindBadge(isTheory),
                 ],
               ),
-              const SizedBox(height: 7),
-              // Theory entries show their FULL text in the list; formulas
-              // get a compact preview (the full view is one tap away).
-              Text(
-                displayText(e.body),
-                maxLines: isTheory ? null : 3,
-                overflow:
-                    isTheory ? TextOverflow.visible : TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: isTheory ? 14 : 15,
-                    height: 1.45,
-                    color: Colors.black87),
-              ),
-              Row(
-                children: [
-                  if (e.userAdded && e.authorName.isNotEmpty)
-                    Expanded(
-                      child: Text('by ${e.authorName}',
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              fontSize: 11.5, color: Colors.black38)),
-                    )
-                  else
-                    const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.share_outlined, size: 19),
-                    color: kPrimary,
-                    tooltip: 'Share',
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () => shareEntry(context, e, _details),
-                  ),
-                  TextButton(
-                    onPressed: () =>
-                        Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => DetailPage(
-                          entry: e,
-                          categoryTitle: catTitle ?? e.category,
-                          details: _details),
-                    )),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('View',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
-                        Icon(Icons.chevron_right, size: 19),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -985,9 +1247,11 @@ class _HomePageState extends State<HomePage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: isTheory
-            ? const Color(0xFFFFF4D6)
-            : const Color(0xFFE7E2FA),
+        gradient: isTheory
+            ? const LinearGradient(
+                colors: [Color(0xFFFFF1CF), Color(0xFFFFE3A3)])
+            : const LinearGradient(
+                colors: [Color(0xFFE9E5FC), Color(0xFFD9D2F5)]),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(isTheory ? 'Theory' : 'Formula',
@@ -1017,8 +1281,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(s.title,
-                  style: const TextStyle(
-                      fontSize: 14.5, fontWeight: FontWeight.w600)),
+                  style: displayStyle(size: 15, weight: FontWeight.w600)),
             ),
             const Icon(Icons.chevron_right, color: kPrimary, size: 20),
           ]),
@@ -1058,6 +1321,7 @@ class DetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryDark,
+        flexibleSpace: Container(decoration: kBarDecoration),
         foregroundColor: Colors.white,
         title: Text(name, style: const TextStyle(fontSize: 17)),
         actions: [
@@ -1073,7 +1337,8 @@ class DetailPage extends StatelessWidget {
         children: [
           Text(
             name,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+            style: displayStyle(
+                size: 23, weight: FontWeight.w700, color: const Color(0xFF1E1B4B)),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1086,20 +1351,45 @@ class DetailPage extends StatelessWidget {
                 color: Color(0xFF7C6AA8)),
           ),
           const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEEF2FF),
-              border: Border.all(color: const Color(0xFFD9D2F5)),
-              borderRadius: BorderRadius.circular(12),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: 1),
+            duration: const Duration(milliseconds: 450),
+            curve: Curves.easeOutCubic,
+            builder: (context, t, child) => Opacity(
+              opacity: t,
+              child:
+                  Transform.scale(scale: 0.97 + 0.03 * t, child: child),
             ),
-            child: Text(
-              displayText(entry.body),
-              textAlign:
-                  entry.kind == 'theory' ? TextAlign.left : TextAlign.center,
-              style: TextStyle(
-                  fontSize: entry.kind == 'theory' ? 15.5 : 21, height: 1.5),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 22),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFEEF2FF), Color(0xFFE7E0FC)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(color: const Color(0xFFCFC4F2)),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Color(0x1A3D2C8F),
+                      blurRadius: 14,
+                      offset: Offset(0, 5)),
+                ],
+              ),
+              child: Text(
+                displayText(entry.body),
+                textAlign:
+                    entry.kind == 'theory' ? TextAlign.left : TextAlign.center,
+                style: entry.kind == 'theory'
+                    ? const TextStyle(fontSize: 15.5, height: 1.55)
+                    : displayStyle(
+                        size: 21,
+                        weight: FontWeight.w600,
+                        color: const Color(0xFF26215C),
+                        height: 1.5),
+              ),
             ),
           ),
           if (entry.userAdded && entry.authorName.isNotEmpty) ...[
@@ -1112,17 +1402,40 @@ class DetailPage extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 14),
-          SizedBox(
+          Container(
             width: double.infinity,
-            child: FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: kPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              gradient: kBrandGradient,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: const [
+                BoxShadow(
+                    color: Color(0x333D2C8F),
+                    blurRadius: 10,
+                    offset: Offset(0, 4)),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: () =>
+                    openFormulaAi(context, entry, details, categoryTitle),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 13),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.auto_awesome, size: 18, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text('Ask AI about this formula',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
               ),
-              icon: const Icon(Icons.auto_awesome, size: 18),
-              label: const Text('Ask AI about this formula'),
-              onPressed: () =>
-                  openFormulaAi(context, entry, details, categoryTitle),
             ),
           ),
           const SizedBox(height: 16),
@@ -1157,9 +1470,9 @@ class DetailPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+              style: displayStyle(
+                  size: 14.5,
+                  weight: FontWeight.w700,
                   color: green ? const Color(0xFF22702C) : kPrimary)),
           const SizedBox(height: 5),
           Text(text, style: const TextStyle(fontSize: 14.5, height: 1.55)),
@@ -1175,9 +1488,9 @@ class DetailPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('What the symbols mean',
-              style: TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w700, color: kPrimary)),
+          Text('What the symbols mean',
+              style: displayStyle(
+                  size: 14.5, weight: FontWeight.w700, color: kPrimary)),
           const SizedBox(height: 5),
           for (final line in lines)
             Padding(
@@ -1202,6 +1515,7 @@ class SyllabusPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryDark,
+        flexibleSpace: Container(decoration: kBarDecoration),
         foregroundColor: Colors.white,
         title: const Text('Syllabus', style: TextStyle(fontSize: 17)),
       ),
@@ -1262,6 +1576,7 @@ class _BrowsePageState extends State<BrowsePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryDark,
+        flexibleSpace: Container(decoration: kBarDecoration),
         foregroundColor: Colors.white,
         title: const Text('Browse by Topic'),
       ),
@@ -1410,6 +1725,7 @@ class _AddHubPageState extends State<AddHubPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryDark,
+        flexibleSpace: Container(decoration: kBarDecoration),
         foregroundColor: Colors.white,
         title: const Text('Add'),
       ),
@@ -1531,6 +1847,7 @@ class _MorePageState extends State<MorePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryDark,
+        flexibleSpace: Container(decoration: kBarDecoration),
         foregroundColor: Colors.white,
         title: const Text('More'),
       ),

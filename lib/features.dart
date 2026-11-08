@@ -238,6 +238,7 @@ InputDecoration fieldDeco(String label, {String? hint, IconData? icon}) {
 AppBar featureBar(String title) {
   return AppBar(
     backgroundColor: kPrimaryDark,
+    flexibleSpace: Container(decoration: kBarDecoration),
     foregroundColor: Colors.white,
     title: Text(title, style: const TextStyle(fontSize: 17)),
   );

@@ -98,6 +98,7 @@ class _ContactPageState extends State<ContactPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryDark,
+        flexibleSpace: Container(decoration: kBarDecoration),
         foregroundColor: Colors.white,
         title: const Text('Contact / Feedback', style: TextStyle(fontSize: 17)),
       ),
