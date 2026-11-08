@@ -617,8 +617,10 @@ class _HomePageState extends State<HomePage> {
       String indexOf(EntryItem e) =>
           '${e.name} ${e.section} ${catTitle[e.category] ?? ''} ${displayText(e.body)}'
               .toLowerCase();
+      const stopwords = {'of', 'the', 'a', 'an', 'and', 'for', 'to', 'in'};
       final tokens = raw
           .split(RegExp(r'\s+'))
+          .where((t) => !stopwords.contains(t))
           .map((t) =>
               (t.length > 3 && t.endsWith('s')) ? t.substring(0, t.length - 1) : t)
           .where((t) => t.length >= 2)
