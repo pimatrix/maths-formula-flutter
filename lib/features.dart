@@ -231,6 +231,7 @@ InputDecoration fieldDeco(String label, {String? hint, IconData? icon}) {
     prefixIcon: icon == null ? null : Icon(icon),
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
     isDense: true,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
   );
 }
 
@@ -277,20 +278,20 @@ class _AuthPageState extends State<AuthPage> {
     final email = _email.text.trim();
     final password = _password.text;
     if (email.isEmpty || password.isEmpty) {
-      setState(() => _error = 'Email aur password dono bharo.');
+      setState(() => _error = 'Please enter both email and password.');
       return;
     }
     if (_signup) {
       if (_name.text.trim().isEmpty) {
-        setState(() => _error = 'Apna naam likho.');
+        setState(() => _error = 'Please enter your name.');
         return;
       }
       if (password.length < 6) {
-        setState(() => _error = 'Password kam se kam 6 characters ka ho.');
+        setState(() => _error = 'Password must be at least 6 characters.');
         return;
       }
       if (password != _confirm.text) {
-        setState(() => _error = 'Password aur Confirm Password ek jaise nahi hain.');
+        setState(() => _error = 'Password and Confirm Password do not match.');
         return;
       }
     }
@@ -312,10 +313,10 @@ class _AuthPageState extends State<AuthPage> {
     if (err != null) {
       setState(() => _error = err);
     } else if (!auth.isLoggedIn) {
-      showMsg(context, 'Account ban gaya. Ab Login tab se login karo.');
+      showMsg(context, 'Account created. Please log in from the Login tab.');
       setState(() => _signup = false);
     } else {
-      showMsg(context, _signup ? 'Account ban gaya — welcome!' : 'Login ho gaya — welcome back!');
+      showMsg(context, _signup ? 'Account created — welcome!' : 'Logged in — welcome back!');
       Navigator.of(context).pop(true);
     }
   }
@@ -388,7 +389,7 @@ class _AuthPageState extends State<AuthPage> {
             const SizedBox(height: 12),
             TextField(
               controller: _institution,
-              decoration: fieldDeco('School / College ka naam',
+              decoration: fieldDeco('School / College name',
                   hint: 'e.g. Medicaps University', icon: Icons.school_outlined),
             ),
             const SizedBox(height: 12),
@@ -423,7 +424,7 @@ class _AuthPageState extends State<AuthPage> {
           ),
           const SizedBox(height: 10),
           const Text(
-            'Yahi account website par bhi chalega — dono jagah ka data ek hi hai.',
+            'The same account works on the website too — your data is shared everywhere.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 12.5, color: Colors.black54),
           ),
@@ -464,7 +465,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (r.statusCode == 200) {
       auth.institution = _institution.text.trim();
       auth.studyLevel = _level;
-      showMsg(context, 'Details save ho gayi.');
+      showMsg(context, 'Details saved.');
     } else {
       showMsg(context, apiError(r));
     }
@@ -514,7 +515,7 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 20),
           TextField(
             controller: _institution,
-            decoration: fieldDeco('School / College ka naam',
+            decoration: fieldDeco('School / College name',
                 icon: Icons.school_outlined),
           ),
           const SizedBox(height: 12),
@@ -630,23 +631,23 @@ class _FormulaFormPageState extends State<FormulaFormPage> {
           if ((d['symbols'] as String? ?? '').isNotEmpty) _symbols.text = d['symbols'];
           if ((d['example'] as String? ?? '').isNotEmpty) _example.text = d['example'];
         });
-        showMsg(context, 'AI ne photo padh kar form bhar diya. Check karke Save karo.');
+        showMsg(context, 'AI read the photo and filled the form. Please check everything, then Save.');
       } else {
         setState(() => _error = apiError(r));
       }
     } catch (_) {
-      if (mounted) setState(() => _error = 'Photo scan fail ho gaya. Dobara try karo.');
+      if (mounted) setState(() => _error = 'Photo scan failed. Please try again.');
     }
     if (mounted) setState(() => _scanning = false);
   }
 
   Future<void> _save() async {
     if (_name.text.trim().isEmpty || _formula.text.trim().isEmpty) {
-      setState(() => _error = 'Name aur Formula dono zaroori hain.');
+      setState(() => _error = 'Both Name and Formula are required.');
       return;
     }
     if (_category.isEmpty) {
-      setState(() => _error = 'Ek category chuno.');
+      setState(() => _error = 'Please choose a category.');
       return;
     }
     setState(() {
@@ -670,7 +671,7 @@ class _FormulaFormPageState extends State<FormulaFormPage> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (r.statusCode == 200) {
-      showMsg(context, isEdit ? 'Formula update ho gaya.' : 'Formula jud gaya. Dhanyavaad!');
+      showMsg(context, isEdit ? 'Formula updated.' : 'Formula added. Thank you!');
       Navigator.of(context).pop(true);
     } else {
       setState(() => _error = apiError(r));
@@ -696,14 +697,14 @@ class _FormulaFormPageState extends State<FormulaFormPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Photo se formula add karo (AI)',
+                  const Text('Add a formula from a photo (AI)',
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 15.5,
                           fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
                   const Text(
-                    'Sabse aasan tareeka: book ya notebook se formula ki photo lagao — AI naam, formula, matlab, symbols aur example khud bhar dega.',
+                    'The easiest way: attach a photo of the formula from a book or notebook — AI fills in the name, formula, meaning, symbols and example for you.',
                     style: TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                   const SizedBox(height: 10),
@@ -718,7 +719,7 @@ class _FormulaFormPageState extends State<FormulaFormPage> {
                             width: 16,
                             child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.photo_camera_outlined, size: 19),
-                    label: Text(_scanning ? 'AI padh raha hai…' : 'Photo lagao'),
+                    label: Text(_scanning ? 'AI is reading…' : 'Choose Photo'),
                   ),
                 ],
               ),
@@ -743,24 +744,17 @@ class _FormulaFormPageState extends State<FormulaFormPage> {
                 hint: 'e.g. Quadratic Equations'),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ChoiceChip(
-                  label: const Text('Formula'),
-                  selected: _kind == 'formula',
-                  onSelected: (_) => setState(() => _kind = 'formula'),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: ChoiceChip(
-                  label: const Text('Theory / Properties'),
-                  selected: _kind == 'theory',
-                  onSelected: (_) => setState(() => _kind = 'theory'),
-                ),
-              ),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(value: 'formula', label: Text('Formula')),
+              ButtonSegment(
+                  value: 'theory', label: Text('Theory / Properties')),
             ],
+            selected: {_kind},
+            onSelectionChanged: (s) => setState(() => _kind = s.first),
+            style: const ButtonStyle(
+              visualDensity: VisualDensity.compact,
+            ),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -778,14 +772,14 @@ class _FormulaFormPageState extends State<FormulaFormPage> {
           TextField(
             controller: _about,
             maxLines: 2,
-            decoration: fieldDeco('Ye formula kis cheez ke liye hai? (optional)'),
+            decoration: fieldDeco('What is this formula used for? (optional)'),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _symbols,
             maxLines: 3,
-            decoration: fieldDeco('Symbols ka matlab (optional)',
-                hint: 'Ek line me ek: x = unknown value'),
+            decoration: fieldDeco('Meaning of symbols (optional)',
+                hint: 'One per line: x = unknown value'),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -843,7 +837,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
 
   Future<void> _save() async {
     if (_title.text.trim().isEmpty) {
-      setState(() => _error = 'Category ka naam likho.');
+      setState(() => _error = 'Please enter a category name.');
       return;
     }
     setState(() {
@@ -857,7 +851,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (r.statusCode == 200) {
-      showMsg(context, 'Nayi category / class ban gayi.');
+      showMsg(context, 'New category / class created.');
       Navigator.of(context).pop(true);
     } else {
       setState(() => _error = apiError(r));
@@ -878,7 +872,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
           const SizedBox(height: 16),
           TextField(
             controller: _title,
-            decoration: fieldDeco('Category / Class ka naam *',
+            decoration: fieldDeco('Category / Class name *',
                 hint: 'e.g. M2 — Engineering Mathematics'),
           ),
           const SizedBox(height: 12),
@@ -938,7 +932,7 @@ class _SyllabusFormPageState extends State<SyllabusFormPage> {
 
   Future<void> _save() async {
     if (_title.text.trim().isEmpty) {
-      setState(() => _error = 'Title zaroori hai.');
+      setState(() => _error = 'A title is required.');
       return;
     }
     setState(() {
@@ -958,7 +952,7 @@ class _SyllabusFormPageState extends State<SyllabusFormPage> {
       if (!mounted) return;
       setState(() => _busy = false);
       if (r.statusCode == 200) {
-        showMsg(context, 'Syllabus material jud gaya.');
+        showMsg(context, 'Syllabus material added.');
         Navigator.of(context).pop(true);
       } else {
         setState(() => _error = apiError(r));
@@ -967,7 +961,7 @@ class _SyllabusFormPageState extends State<SyllabusFormPage> {
       if (mounted) {
         setState(() {
           _busy = false;
-          _error = 'Network error. Dobara try karo.';
+          _error = 'Network error. Please try again.';
         });
       }
     }
@@ -982,7 +976,7 @@ class _SyllabusFormPageState extends State<SyllabusFormPage> {
         children: [
           DropdownButtonFormField<String>(
             initialValue: _category,
-            decoration: fieldDeco('Kis class ke liye?'),
+            decoration: fieldDeco('Which class is this for?'),
             items: [
               const DropdownMenuItem(
                   value: '', child: Text('All Classes (Global)')),
@@ -1026,7 +1020,7 @@ class _SyllabusFormPageState extends State<SyllabusFormPage> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Note: File (PDF/photo) upload website se hota hai; yahan text wala syllabus jud sakta hai.',
+            'Note: File uploads (PDF/photo) are done on the website; here you can add the syllabus as text.',
             style: TextStyle(fontSize: 12.5, color: Colors.black54),
           ),
         ],
@@ -1077,8 +1071,8 @@ class _MyFormulasPageState extends State<MyFormulasPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete karein?'),
-        content: Text('"${e.name}" hamesha ke liye hat jayega.'),
+        title: const Text('Delete this?'),
+        content: Text('"${e.name}" will be deleted permanently.'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -1094,7 +1088,7 @@ class _MyFormulasPageState extends State<MyFormulasPage> {
         method: 'DELETE', body: {'id': e.id});
     if (!mounted) return;
     if (r.statusCode == 200) {
-      showMsg(context, 'Delete ho gaya.');
+      showMsg(context, 'Deleted.');
       _load();
     } else {
       showMsg(context, apiError(r));
@@ -1112,7 +1106,7 @@ class _MyFormulasPageState extends State<MyFormulasPage> {
                   child: Padding(
                     padding: EdgeInsets.all(24),
                     child: Text(
-                      'Abhi tak koi formula add nahi hua. "Add Formula" se pehla formula jodo!',
+                      'No formulas added yet. "Add Formula" to add the first one!',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.black54),
                     ),
@@ -1222,8 +1216,8 @@ class _AdminPageState extends State<AdminPage> {
     if (!mounted) return;
     if (r.statusCode == 200) {
       showMsg(context, role == 'admin'
-          ? '${u['email']} ab admin hai.'
-          : '${u['email']} ab normal user hai.');
+          ? '${u['email']} is now an admin.'
+          : '${u['email']} is now a normal user.');
       _load();
     } else {
       showMsg(context, apiError(r));
@@ -1293,7 +1287,7 @@ class _AdminPageState extends State<AdminPage> {
       return Scaffold(
         appBar: featureBar('Admin Dashboard'),
         body: Center(
-            child: Text(_error.isEmpty ? 'Data nahi mila.' : _error)),
+            child: Text(_error.isEmpty ? 'Could not load data.' : _error)),
       );
     }
     final t = (_overview!['totals'] as Map<String, dynamic>?) ?? {};
@@ -1336,7 +1330,7 @@ class _AdminPageState extends State<AdminPage> {
                 style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
             if (recent.isEmpty)
-              const Text('Abhi koi addition nahi.',
+              const Text('No additions yet.',
                   style: TextStyle(color: Colors.black54, fontSize: 13.5)),
             for (final a in recent.take(10))
               ListTile(
