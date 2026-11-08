@@ -53,6 +53,15 @@ void main() {
     expect(out, isNot(contains('^{')));
   });
 
+  test('displayText renders the standard-values table as text lines', () {
+    final out = displayText(
+        '<table class="vals">\n<tr><th>θ</th><th>0° (0)</th><th>30° (π/6)</th></tr>\n<tr><th>sin θ</th><td>0</td><td>1/2</td></tr></table>');
+    expect(out, isNot(contains('<')));
+    expect(out, contains('sin θ'));
+    expect(out, contains('1/2'));
+    expect(out.split('\n').length, greaterThanOrEqualTo(2));
+  });
+
   test('skeleton flattens typed and rendered formulas to the same string',
       () {
     expect(skeleton('(a+b)²'), '(a+b)2');

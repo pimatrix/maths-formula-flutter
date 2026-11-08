@@ -92830,32 +92830,37 @@ else r.push(A.dS(p,p,p,!0,!0,B.pN,p,new A.aqG(q),p,p,p,B.BW,p,p))
 return new A.LH(A.ft(r,B.ac,p,B.O,!1),p)},
 E7(a,b){var s=null,r=this.w
 return new A.be(B.Ij,A.aAn(A.ar(b,s,s,s,B.BH,s,s),new A.aqz(this,a),r===a),s)},
-aaa(a,b){var s,r,q,p,o,n,m,l=null,k=b.a,j=A.a_(k),i=A.aB6(new A.dT(new A.au(k,new A.aqH(a),j.i("au<1>")),new A.aqI(),j.i("dT<1,o>"))),h=a.f==="theory"
-j=new A.aqK(this,a,i)
-k=A.dC(16)
-s=A.dC(16)
-r=A.cK(l,l,B.o,l,l,new A.cv(l,l,l,l,l,h?B.Kr:B.Kn,B.aj),l,l,l,l,l,l,4.5)
-q=A.ar(A.Jg(a,this.f),l,l,l,A.t2(B.od,1.4,16.5,B.aW),l,l)
-p=A.b([],t.s)
-if(i!=null)p.push(i)
-o=a.c
-if(o.length!==0)p.push(o)
-o=t.p
-p=A.ho(A.el(A.b([q,B.B9,A.ar(B.b.bm(p," \xb7 "),l,l,l,B.Xz,l,l)],o),B.aN,B.F,B.a3),1)
-q=h?B.Kp:B.Kl
+aaa(a,b){var s,r,q,p,o,n,m,l,k,j,i,h=null,g=b.a,f=A.a_(g),e=A.aB6(new A.dT(new A.au(g,new A.aqH(a),f.i("au<1>")),new A.aqI(),f.i("dT<1,o>")))
+f=a.f
+s=f==="theory"
+r=s||f==="table"
+g=new A.aqK(this,a,e)
+q=A.dC(16)
+p=A.dC(16)
+o=A.cK(h,h,B.o,h,h,new A.cv(h,h,h,h,h,r?B.Kr:B.Kn,B.aj),h,h,h,h,h,h,4.5)
+n=A.ar(A.Jg(a,this.f),h,h,h,A.t2(B.od,1.4,16.5,B.aW),h,h)
+m=A.b([],t.s)
+if(e!=null)m.push(e)
+l=a.c
+if(l.length!==0)m.push(l)
+l=t.p
+m=A.ho(A.el(A.b([n,B.B9,A.ar(B.b.bm(m," \xb7 "),h,h,h,B.Xz,h,h)],l),B.aN,B.F,B.a3),1)
+k=f!=="formula"
+if(s)j="Theory"
+else j=f==="table"?"Table":"Formula"
+f=k?B.Kp:B.Kl
 n=A.dC(20)
-m=h?"Theory":"Formula"
-q=A.es(A.b([p,A.cK(l,A.ar(m,l,l,l,A.fB(l,l,h?B.FZ:B.FG,l,l,l,l,l,l,l,l,10.5,l,l,B.aW,l,l,!0,l,l,l,l,l,l,l,l),l,l),B.o,l,l,new A.cv(l,l,l,n,l,q,B.aj),l,l,l,B.Io,l,l,l)],o),B.aN,B.F,B.a3,0)
-p=A.m8(a.e)
-n=h?l:3
-m=h?B.BG:B.aD
-p=A.ar(p,n,m,l,h?B.Wi:A.t2(B.oC,1.45,15.5,B.af),l,l)
-n=A.b([],o)
-if(a.r&&a.Q.length!==0)n.push(A.ho(A.ar("by "+a.Q,l,B.aD,l,B.Wz,l,l),1))
-else n.push(B.Uj)
-n.push(A.pF(B.Q,l,B.JD,l,l,new A.aqJ(this,a),l,l,"Share",B.n2))
-n.push(A.eG(!1,B.J,!0,A.dC(20),A.mK(!1,A.dC(20),!0,B.Qx,l,!0,l,l,l,l,l,l,l,l,j,l,l,l,l,l,l,l),B.o,B.Q,0,l,l,l,l,l,B.bH))
-return new A.zy(a.a,A.cK(l,A.aAr(s,A.mK(!1,l,!0,new A.MZ(A.es(A.b([r,A.ho(new A.be(B.I3,A.el(A.b([q,B.iT,p,B.fF,A.es(n,B.Y,B.F,B.a3,0)],o),B.aN,B.F,B.a3),l),1)],o),B.dQ,B.F,B.a3,0),l),l,!0,l,l,l,l,l,l,l,l,j,l,l,l,l,l,l,l),B.c6),B.o,l,l,new A.cv(B.k,l,l,k,B.LG,l,B.aj),l,l,B.kr,l,l,l,l),l)},
+f=A.es(A.b([m,A.cK(h,A.ar(j,h,h,h,A.fB(h,h,k?B.FZ:B.FG,h,h,h,h,h,h,h,h,10.5,h,h,B.aW,h,h,!0,h,h,h,h,h,h,h,h),h,h),B.o,h,h,new A.cv(h,h,h,n,h,f,B.aj),h,h,h,B.Io,h,h,h)],l),B.aN,B.F,B.a3,0)
+n=A.m8(a.e)
+m=r?h:3
+i=r?B.BG:B.aD
+n=A.ar(n,m,i,h,r?B.Wi:A.t2(B.oC,1.45,15.5,B.af),h,h)
+m=A.b([],l)
+if(a.r&&a.Q.length!==0)m.push(A.ho(A.ar("by "+a.Q,h,B.aD,h,B.Wz,h,h),1))
+else m.push(B.Uj)
+m.push(A.pF(B.Q,h,B.JD,h,h,new A.aqJ(this,a),h,h,"Share",B.n2))
+m.push(A.eG(!1,B.J,!0,A.dC(20),A.mK(!1,A.dC(20),!0,B.Qx,h,!0,h,h,h,h,h,h,h,h,g,h,h,h,h,h,h,h),B.o,B.Q,0,h,h,h,h,h,B.bH))
+return new A.zy(a.a,A.cK(h,A.aAr(p,A.mK(!1,h,!0,new A.MZ(A.es(A.b([o,A.ho(new A.be(B.I3,A.el(A.b([f,B.iT,n,B.fF,A.es(m,B.Y,B.F,B.a3,0)],l),B.aN,B.F,B.a3),h),1)],l),B.dQ,B.F,B.a3,0),h),h,!0,h,h,h,h,h,h,h,h,g,h,h,h,h,h,h,h),B.c6),B.o,h,h,new A.cv(B.k,h,h,q,B.LG,h,B.aj),h,h,B.kr,h,h,h,h),h)},
 akw(a){var s=null,r=A.dC(12)
 return A.Kx(A.mK(!1,A.dC(12),!0,new A.be(B.hy,A.es(A.b([B.Ju,B.B6,A.ho(A.ar(a.a,s,s,s,A.t2(s,1.4,15,B.bw),s,s),1),B.JE],t.p),B.Y,B.F,B.a3,0),s),s,!0,s,s,s,s,s,s,s,s,new A.aqX(this,a),s,s,s,s,s,s,s),B.k0,0.6,B.HU,new A.ct(r,B.m))}}
 A.aqT.prototype={
@@ -93028,43 +93033,44 @@ A.aqW.prototype={
 $1(a){return new A.vu(this.a,null)},
 $S:576}
 A.tK.prototype={
-G(a1){var s,r,q,p,o,n,m,l,k,j,i,h,g,f=this,e=null,d=f.c,c=d.w,b=d.x,a=d.y,a0=d.r
-if(!a0){s=f.e.h(0,d.a)
-if(t.f.b(s)){c=A.aW(s.h(0,"about"))
-if(c==null)c=""
-b=A.aW(s.h(0,"symbols"))
+G(a2){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e=this,d=null,c=e.c,b=c.w,a=c.x,a0=c.y,a1=c.r
+if(!a1){s=e.e.h(0,c.a)
+if(t.f.b(s)){b=A.aW(s.h(0,"about"))
 if(b==null)b=""
-a=A.aW(s.h(0,"example"))
-if(a==null)a=""}}r=c.length===0
-q=!r||b.length!==0||a.length!==0
-p=A.Jg(d,f.e)
-o=A.cK(e,e,B.o,e,e,B.c4,e,e,e,e,e,e,e)
-n=A.ar(p,e,e,e,B.fK,e,e)
+a=A.aW(s.h(0,"symbols"))
+if(a==null)a=""
+a0=A.aW(s.h(0,"example"))
+if(a0==null)a0=""}}r=b.length===0
+q=!r||a.length!==0||a0.length!==0
+p=A.Jg(c,e.e)
+o=A.cK(d,d,B.o,d,d,B.c4,d,d,d,d,d,d,d)
+n=A.ar(p,d,d,d,B.fK,d,d)
 m=t.p
-n=A.mg(A.b([A.pF(e,e,B.Jy,e,e,new A.a2W(f,a1),e,e,"Share",e)],m),B.bE,o,B.k,n)
-o=A.ar(p,e,e,e,A.t2(B.od,1.4,23,B.aW),e,e)
-l=d.c
-k=f.d
-l=A.ar(l.length===0?k:k+" \xb7 "+l,e,e,e,B.Yp,e,e)
+n=A.mg(A.b([A.pF(d,d,B.Jy,d,d,new A.a2W(e,a2),d,d,"Share",d)],m),B.bE,o,B.k,n)
+o=A.ar(p,d,d,d,A.t2(B.od,1.4,23,B.aW),d,d)
+l=c.c
+k=e.d
+l=A.ar(l.length===0?k:k+" \xb7 "+l,d,d,d,B.Yp,d,d)
 k=A.a11(B.FW)
 j=A.dC(16)
-i=A.m8(d.e)
-h=d.f==="theory"
-g=h?B.ch:B.ci
-o=A.b([o,B.fF,l,B.ak,new A.vM(new A.aq(0,1,t.Y),new A.a2X(),A.cK(e,A.ar(i,e,e,e,h?B.XC:A.t2(B.oC,1.5,21,B.bw),g,e),B.o,e,e,new A.cv(e,e,k,j,B.MV,B.Ko,B.aj),e,e,e,B.I6,e,e,1/0),B.kg,B.oS,e,e,t.HN)],m)
-if(a0&&d.Q.length!==0){a0=d.as
-a0=a0.length!==0?" ("+a0+")":""
-l=d.at
+i=A.m8(c.e)
+h=c.f
+g=h!=="theory"
+f=!g||h==="table"?B.ch:B.ci
+o=A.b([o,B.fF,l,B.ak,new A.vM(new A.aq(0,1,t.Y),new A.a2X(),A.cK(d,A.ar(i,d,d,d,!g||h==="table"?B.XC:A.t2(B.oC,1.5,21,B.bw),f,d),B.o,d,d,new A.cv(d,d,k,j,B.MV,B.Ko,B.aj),d,d,d,B.I6,d,d,1/0),B.kg,B.oS,d,d,t.HN)],m)
+if(a1&&c.Q.length!==0){a1=c.as
+a1=a1.length!==0?" ("+a1+")":""
+l=c.at
 l=l.length!==0?" \xb7 "+A.aZh(l):""
-B.b.R(o,A.b([B.mx,A.ar("Added by "+d.Q+a0+l,e,e,e,B.BL,e,e)],m))}o.push(B.en)
-d=A.dC(14)
-o.push(A.cK(e,A.eG(!1,B.J,!0,e,A.mK(!1,A.dC(14),!0,B.Qv,e,!0,e,e,e,e,e,e,e,e,new A.a2Y(f,a1),e,e,e,e,e,e,e),B.o,B.x,0,e,e,e,e,e,B.bH),B.o,e,e,new A.cv(e,e,e,d,B.KB,B.pY,B.aj),e,e,e,e,e,e,1/0))
+B.b.R(o,A.b([B.mx,A.ar("Added by "+c.Q+a1+l,d,d,d,B.BL,d,d)],m))}o.push(B.en)
+c=A.dC(14)
+o.push(A.cK(d,A.eG(!1,B.J,!0,d,A.mK(!1,A.dC(14),!0,B.Qv,d,!0,d,d,d,d,d,d,d,d,new A.a2Y(e,a2),d,d,d,d,d,d,d),B.o,B.x,0,d,d,d,d,d,B.bH),B.o,d,d,new A.cv(d,d,d,c,B.KB,B.pY,B.aj),d,d,d,d,d,d,1/0))
 o.push(B.eo)
-if(!r)o.push(f.a78("What is this formula for?",A.m8(c)))
-if(b.length!==0)o.push(f.akx(b))
-if(a.length!==0)o.push(f.O4("Example \u2014 how to use it",A.m8(a),!0))
+if(!r)o.push(e.a78("What is this formula for?",A.m8(b)))
+if(a.length!==0)o.push(e.akx(a))
+if(a0.length!==0)o.push(e.O4("Example \u2014 how to use it",A.m8(a0),!0))
 if(!q)o.push(B.ZS)
-return A.f5(n,A.ft(o,B.ku,e,B.O,!1),e,e)},
+return A.f5(n,A.ft(o,B.ku,d,B.O,!1),d,d)},
 O4(a,b,c){var s=null,r=c?B.I4:B.ac,q=c?new A.cv(B.FP,s,A.a11(B.Go),A.dC(10),s,s,B.aj):s
 return A.cK(s,A.el(A.b([A.ar(a,s,s,s,A.t2(c?B.Fv:B.Q,1.4,14.5,B.aW),s,s),B.Ba,A.ar(b,s,s,s,B.WY,s,s)],t.p),B.aN,B.F,B.a3),B.o,s,s,q,s,s,B.oW,r,s,s,s)},
 a78(a,b){return this.O4(a,b,!1)},
@@ -101522,7 +101528,7 @@ f=i[2]
 e=[400*h/(h+27.13),400*g/(g+27.13),400*f/(f+27.13)]
 return new A.aky(k,(40*e[0]+20*e[1]+e[2])/20*j,j,j,b,1,q,l,A.Jk(l,0.25),1.48+p)})
 s($,"b4a","cG",()=>new A.K4($.a7()))
-s($,"b37","aNt",()=>A.bO("</?(span|sup|sub|p|b|i|div|br)[\\s>/]",!1,!1))
+s($,"b37","aNt",()=>A.bO("</?(span|sup|sub|p|b|i|div|br|table|thead|tbody|tr|td|th)[\\s>/]",!1,!1))
 s($,"b3K","aNT",()=>{var q,p,o=t.N
 o=A.p(o,o)
 for(q=B.lF.ght(),q=q.ga9(q);q.t();){p=q.gO()

@@ -393,7 +393,8 @@ String formulaTextToPlain(String input) {
   return out.toString().replaceAll(RegExp(r'[ \t]+'), ' ').trim();
 }
 
-final RegExp _htmlTagRe = RegExp(r'</?(span|sup|sub|p|b|i|div|br)[\s>/]');
+final RegExp _htmlTagRe =
+    RegExp(r'</?(span|sup|sub|p|b|i|div|br|table|thead|tbody|tr|td|th)[\s>/]');
 
 /// Renders any stored body/text (HTML for built-in entries, FormulaText for
 /// user entries and detail fields) as clean book-style plain text.
@@ -1096,6 +1097,7 @@ class _HomePageState extends State<HomePage> {
         .map((c) => c.title)
         .firstOrNull;
     final isTheory = e.kind == 'theory';
+    final fullText = isTheory || e.kind == 'table';
     void openDetail() => Navigator.of(context).push(MaterialPageRoute(
           builder: (_) => DetailPage(
               entry: e,
@@ -1125,7 +1127,7 @@ class _HomePageState extends State<HomePage> {
                   Container(
                     width: 4.5,
                     decoration: BoxDecoration(
-                        gradient: isTheory ? kAmberGradient : kAccentGradient),
+                        gradient: fullText ? kAmberGradient : kAccentGradient),
                   ),
                   Expanded(
                     child: Padding(
@@ -1159,7 +1161,7 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                               ),
-                              _kindBadge(isTheory),
+                              _kindBadge(e.kind),
                             ],
                           ),
                           const SizedBox(height: 8),
@@ -1167,11 +1169,11 @@ class _HomePageState extends State<HomePage> {
                           // formulas get a compact preview.
                           Text(
                             displayText(e.body),
-                            maxLines: isTheory ? null : 3,
-                            overflow: isTheory
+                            maxLines: fullText ? null : 3,
+                            overflow: fullText
                                 ? TextOverflow.visible
                                 : TextOverflow.ellipsis,
-                            style: isTheory
+                            style: fullText
                                 ? const TextStyle(
                                     fontSize: 14,
                                     height: 1.5,
@@ -1243,22 +1245,25 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _kindBadge(bool isTheory) {
+  Widget _kindBadge(String kind) {
+    final warm = kind != 'formula';
+    final label =
+        kind == 'theory' ? 'Theory' : (kind == 'table' ? 'Table' : 'Formula');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        gradient: isTheory
+        gradient: warm
             ? const LinearGradient(
                 colors: [Color(0xFFFFF1CF), Color(0xFFFFE3A3)])
             : const LinearGradient(
                 colors: [Color(0xFFE9E5FC), Color(0xFFD9D2F5)]),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(isTheory ? 'Theory' : 'Formula',
+      child: Text(label,
           style: TextStyle(
               fontSize: 10.5,
               fontWeight: FontWeight.w700,
-              color: isTheory
+              color: warm
                   ? const Color(0xFF8A6D00)
                   : const Color(0xFF4A3A9E))),
     );
@@ -1380,9 +1385,10 @@ class DetailPage extends StatelessWidget {
               ),
               child: Text(
                 displayText(entry.body),
-                textAlign:
-                    entry.kind == 'theory' ? TextAlign.left : TextAlign.center,
-                style: entry.kind == 'theory'
+                textAlign: (entry.kind == 'theory' || entry.kind == 'table')
+                    ? TextAlign.left
+                    : TextAlign.center,
+                style: (entry.kind == 'theory' || entry.kind == 'table')
                     ? const TextStyle(fontSize: 15.5, height: 1.55)
                     : displayStyle(
                         size: 21,
