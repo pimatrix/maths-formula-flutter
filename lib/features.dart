@@ -1885,7 +1885,8 @@ class _AdminPageState extends State<AdminPage> {
 
 // ================= Admin sub-pages (structured dashboard) =================
 
-String vWho(Map<String, dynamic> e) => (e['user_email'] as String?) ?? 'Visitor';
+String vWho(Map<String, dynamic> e) =>
+    (e['user_name'] as String?) ?? (e['user_email'] as String?) ?? 'Visitor';
 
 String vDev(Map<String, dynamic> e) => [e['device'], e['model'], e['os'], e['browser']]
     .where((x) => x != null && '$x'.isNotEmpty)

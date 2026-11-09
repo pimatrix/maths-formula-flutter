@@ -27,6 +27,7 @@ class Tracker {
   static final Tracker instance = Tracker._();
 
   String _visitorId = '';
+  final Completer<void> _ready = Completer<void>();
   bool _started = false;
   bool _localOptOut = false;
   Timer? _heartbeat;
@@ -49,6 +50,7 @@ class Tracker {
       _localOptOut = prefs.getBool('mm_analytics_optout') ?? false;
       _meta = await _collectMeta();
     } catch (_) {}
+    if (!_ready.isCompleted) _ready.complete();
     await send('pageview', path: '/');
     _heartbeat?.cancel();
     _heartbeat = Timer.periodic(const Duration(seconds: 60), (_) async {
@@ -110,6 +112,16 @@ class Tracker {
   Future<void> send(String type,
       {String? path, String? formulaName, String? category}) async {
     if (optedOut) return;
+    // Every event must carry this device's visitor ID (one device =
+    // one count). If start() is still loading the ID, wait briefly;
+    // an event without an ID is never sent — those were polluting
+    // the visitor counts.
+    if (_visitorId.isEmpty) {
+      try {
+        await _ready.future.timeout(const Duration(seconds: 2));
+      } catch (_) {}
+    }
+    if (_visitorId.isEmpty) return;
     try {
       final body = <String, dynamic>{
         'visitor_id': _visitorId,

@@ -567,9 +567,15 @@ class _AiTutorPageState extends State<AiTutorPage> {
       top: false,
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 8, 10),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFE3DEF7))),
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF26262E)
+              : Colors.white,
+          border: Border(
+              top: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF383842)
+                      : const Color(0xFFE3DEF7))),
         ),
         child: Row(
           children: [
@@ -580,12 +586,21 @@ class _AiTutorPageState extends State<AiTutorPage> {
                 maxLines: 4,
                 textInputAction: TextInputAction.send,
                 onSubmitted: _send,
-                decoration: const InputDecoration(
+                style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : null),
+                decoration: InputDecoration(
                   hintText: 'Type your question…',
-                  border: OutlineInputBorder(),
+                  hintStyle: TextStyle(color: subtleColor(context)),
+                  filled: true,
+                  fillColor: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF2E2E37)
+                      : Colors.white,
+                  border: const OutlineInputBorder(),
                   isDense: true,
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
                 ),
               ),
             ),

@@ -17,7 +17,7 @@ import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
 const String kSiteUrl = 'https://yashx.xyz/MathMitra';
-const String kAppVersion = '1.1.6';
+const String kAppVersion = '1.1.7';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -1197,13 +1197,18 @@ class _HomePageState extends State<HomePage> {
               (t.length > 3 && t.endsWith('s')) ? t.substring(0, t.length - 1) : t)
           .where((t) => t.length >= 2)
           .toList();
+      // Very short queries ("g") used to return nothing at all: the
+      // token filter above drops 1-letter words and the skeleton match
+      // needed 3+ characters. They get their own matching below.
+      final shortQ =
+          tokens.isEmpty ? raw.replaceAll(RegExp(r'[^a-z0-9]'), '') : '';
 
       final scored = <(EntryItem, int, int, int)>[]; // entry, skelHit, matched, score
       for (final e in list) {
         final name = displayName(e, _details).toLowerCase();
         final mid = '${e.section} ${catTitle[e.category] ?? ''}'.toLowerCase();
         final body = displayText(e.body).toLowerCase();
-        final skelHit = (qSkel.length >= 3 &&
+        final skelHit = (qSkel.length >= 2 &&
                 skeleton('$name $body').contains(qSkel))
             ? 1
             : 0;
@@ -1224,6 +1229,24 @@ class _HomePageState extends State<HomePage> {
             hit = true;
           }
           if (hit) matched++;
+        }
+        if (shortQ.length == 1) {
+          final c = shortQ;
+          bool startsWord(String text) => text
+              .split(RegExp(r'[^a-z0-9]+'))
+              .any((w) => w.startsWith(c));
+          if (startsWord(name)) {
+            score += 3;
+            matched = 1;
+          } else if (startsWord(mid)) {
+            score += 2;
+            matched = 1;
+          } else if (body.contains(' $c ') ||
+              body.contains('$c(') ||
+              body.contains('$c =')) {
+            score += 1;
+            matched = 1;
+          }
         }
         if (skelHit == 1 || matched > 0) {
           scored.add((e, skelHit, matched, score));
@@ -1297,14 +1320,26 @@ class _HomePageState extends State<HomePage> {
                             TextField(
                               controller: _searchCtrl,
                               focusNode: _searchFocus,
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : const Color(0xFF16130E)),
                               decoration: InputDecoration(
                                 hintText: 'Search',
                                 hintStyle: TextStyle(
                                     color: subtleColor(context), fontSize: 14),
-                                prefixIcon:
-                                    const Icon(Icons.search, color: kPrimary),
+                                prefixIcon: Icon(Icons.search,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? const Color(0xFFA5B4FC)
+                                        : kPrimary),
                                 filled: true,
-                                fillColor: Colors.white,
+                                fillColor: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? const Color(0xFF2E2E37)
+                                    : Colors.white,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(14),
                                   borderSide: BorderSide.none,
