@@ -7,9 +7,13 @@ import 'package:maths_formula_sheet/main.dart';
 void main() {
   testWidgets('App builds and shows its title', (WidgetTester tester) async {
     await tester.pumpWidget(const FormulaApp());
+    // The slim bar (with the app name) appears once the bundled data loads;
+    // asset IO needs real async time inside a widget test.
+    await tester
+        .runAsync(() => Future.delayed(const Duration(milliseconds: 900)));
     await tester.pump();
 
-    expect(find.text('Maths Formula Sheet'), findsWidgets);
+    expect(find.text('MathMitra'), findsWidgets);
   });
 
   testWidgets('Bottom navigation shows all five tabs',
@@ -60,6 +64,47 @@ void main() {
     expect(out, contains('sin θ'));
     expect(out, contains('1/2'));
     expect(out.split('\n').length, greaterThanOrEqualTo(2));
+  });
+
+
+  test('structuredLines splits numbered rule points onto separate lines', () {
+    final lines = structuredLines(
+        '(1) Factor the denominator and find the singular points. (2) Points outside contribute 0. (3) For each inside point, apply the formula (n = 0). (4) Add the contributions.');
+    expect(lines.length, 4);
+    expect(lines.map((l) => l.marker).toList(), ['1', '2', '3', '4']);
+    expect(lines[1].text, 'Points outside contribute 0.');
+  });
+
+  test('structuredLines bullets a newline-separated properties list', () {
+    final lines = structuredLines(
+        'Interchanging two rows changes the sign.\nTwo identical rows give value = 0.\nMultiplying one row by k multiplies the determinant by k.\nAdding a multiple of one row to another does not change the value.');
+    expect(lines.length, 4);
+    expect(lines.every((l) => l.marker == '•'), isTrue);
+  });
+
+  test('structuredLines splits the pipe-separated determinant cluster', () {
+    final lines =
+        structuredLines('|Aᵀ| = |A| | |AB| = |A|·|B| | Determinant of a triangular matrix = product of its diagonal entries.');
+    expect(lines.length, 3);
+    expect(lines[1].text, '|AB| = |A|·|B|');
+  });
+
+  test('structuredLines splits long prose into sentence bullets', () {
+    final lines = structuredLines(
+        'A logarithm is the inverse of a power: if a^x = m, then x = log_a m. The natural log uses the base e. Logarithms turn multiplication into addition and powers into multiplication. That is why they simplify heavy calculations in exams.');
+    expect(lines.length, greaterThanOrEqualTo(3));
+  });
+
+  test('stripTitlePrefix removes a repeated title but never a formula start',
+      () {
+    expect(
+        stripTitlePrefix('PROPERTIES — Determinants (frequently asked):\nInterchanging two rows changes the sign.',
+            ['PROPERTIES — Determinants (frequently asked)']),
+        startsWith('Interchanging'));
+    expect(stripTitlePrefix('log(m/n) = log m − log n', ['log']),
+        'log(m/n) = log m − log n');
+    expect(stripTitlePrefix('AP: aₙ = a + (n−1)d', ['AP']),
+        'aₙ = a + (n−1)d');
   });
 
   test('skeleton flattens typed and rendered formulas to the same string',

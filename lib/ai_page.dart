@@ -277,7 +277,7 @@ class _AiTutorPageState extends State<AiTutorPage> {
                 textInputAction: TextInputAction.send,
                 onSubmitted: _send,
                 decoration: const InputDecoration(
-                  hintText: 'Type your maths question…',
+                  hintText: 'Type your question…',
                   border: OutlineInputBorder(),
                   isDense: true,
                   contentPadding:

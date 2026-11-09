@@ -60,13 +60,13 @@ class _ContactPageState extends State<ContactPage> {
         },
         body: jsonEncode({
           'access_key': _kWeb3FormsKey,
-          'subject': '[Formula App] $_type — from $name',
-          'from_name': 'Maths Formula Sheet App',
+          'subject': '[MathMitra] $_type — from $name',
+          'from_name': 'MathMitra App',
           'name': name,
           'email': email,
           'type': _type,
           'message': message,
-          'source': 'Maths Formula Sheet (Flutter web app)',
+          'source': 'MathMitra (web app)',
         }),
       );
       final d = jsonDecode(r.body) as Map<String, dynamic>;

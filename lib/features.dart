@@ -391,7 +391,7 @@ class _AuthPageState extends State<AuthPage> {
             TextField(
               controller: _institution,
               decoration: fieldDeco('School / College name',
-                  hint: 'e.g. Medicaps University', icon: Icons.school_outlined),
+                  hint: 'Medicaps University', icon: Icons.school_outlined),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
@@ -742,7 +742,7 @@ class _FormulaFormPageState extends State<FormulaFormPage> {
           TextField(
             controller: _section,
             decoration: fieldDeco('Section / Topic',
-                hint: 'e.g. Quadratic Equations'),
+                hint: 'Quadratic Equations'),
           ),
           const SizedBox(height: 12),
           SegmentedButton<String>(
@@ -760,14 +760,14 @@ class _FormulaFormPageState extends State<FormulaFormPage> {
           const SizedBox(height: 12),
           TextField(
             controller: _name,
-            decoration: fieldDeco('Name *', hint: 'e.g. Quadratic Formula'),
+            decoration: fieldDeco('Name *', hint: 'Quadratic Formula'),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _formula,
             maxLines: 3,
             decoration: fieldDeco('Formula * (FormulaText)',
-                hint: r'x = \frac{-b \pm \sqrt{b^{2} - 4ac}}{2a}'),
+                hint: r'x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}'),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -780,7 +780,7 @@ class _FormulaFormPageState extends State<FormulaFormPage> {
             controller: _symbols,
             maxLines: 3,
             decoration: fieldDeco('Meaning of symbols (optional)',
-                hint: 'One per line: x = unknown value'),
+                hint: 'x = unknown value'),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -867,20 +867,20 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
         padding: const EdgeInsets.all(18),
         children: [
           const Text(
-            'Nayi class ya category banao — jaise "M2 — Engineering Mathematics" ya "Class 10". Uske baad usme formule jod sakte ho.',
+            'Create a new class or category — like "M2 — Engineering Mathematics" or "Class 10". Then you can add formulas to it.',
             style: TextStyle(fontSize: 13.5, color: Colors.black54, height: 1.5),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _title,
             decoration: fieldDeco('Category / Class name *',
-                hint: 'e.g. M2 — Engineering Mathematics'),
+                hint: 'M2 — Engineering Mathematics'),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _group,
             decoration: fieldDeco('Group (optional)',
-                hint: 'e.g. Units, Basics, School'),
+                hint: 'Units, Basics, School'),
           ),
           if (_error.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -991,14 +991,14 @@ class _SyllabusFormPageState extends State<SyllabusFormPage> {
           const SizedBox(height: 12),
           TextField(
             controller: _title,
-            decoration: fieldDeco('Title *', hint: 'e.g. M1 Full Syllabus'),
+            decoration: fieldDeco('Title *', hint: 'M1 Full Syllabus'),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _content,
             maxLines: 10,
             decoration: fieldDeco('Syllabus text',
-                hint: 'Units aur topics yahan likho…'),
+                hint: 'Write the units and topics…'),
           ),
           if (_error.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -1311,16 +1311,16 @@ class _AdminPageState extends State<AdminPage> {
               children: [
                 _stat('Users', t['users']),
                 _stat('Pageviews', t['pageviews']),
-                _stat('Aaj ke pageviews', t['pageviewsToday']),
+                _stat("Today's pageviews", t['pageviewsToday']),
                 _stat('Visitors', t['visitors']),
                 _stat('Formula views', t['formulaViews']),
                 _stat('Shares', t['shares']),
                 _stat('Built-in formulas', t['seedFormulas']),
-                _stat('Users ne jode', t['addedFormulas']),
+                _stat('Added by users', t['addedFormulas']),
                 _stat('Categories', t['categories']),
               ],
             ),
-            _topList('Sabse zyada dekhe gaye formule',
+            _topList('Most viewed formulas',
                 _overview!['topFormulas'] as List<dynamic>?),
             _topList('Top categories',
                 _overview!['topCategories'] as List<dynamic>?),
@@ -1344,7 +1344,7 @@ class _AdminPageState extends State<AdminPage> {
                     style: const TextStyle(fontSize: 12)),
               ),
             const SizedBox(height: 18),
-            const Text('Users — Admin banao / hatao',
+            const Text('Users — manage admins',
                 style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
             for (final u in _users)

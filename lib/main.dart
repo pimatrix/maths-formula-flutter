@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'ai_page.dart';
 import 'contact_page.dart';
 import 'features.dart';
+import 'pdf_export.dart';
 
 const String kApiUrl = 'https://yashx.xyz/math-formula-sheet-m1/api/formulas';
 const String kCacheKey = 'fs_api_cache_v1';
@@ -418,6 +419,214 @@ String displayName(EntryItem e, Map<String, dynamic> details) {
   return displayText(e.name);
 }
 
+
+/// Removes a repeated entry title from the start of a body text. Many
+/// theory bodies begin with their own name followed by ':' — the page
+/// already shows the name as its heading, so the repeat is dropped. Only
+/// strips when the name is followed by ':', '—' or a line break, so a
+/// formula that merely starts with the same letters is never touched.
+String stripTitlePrefix(String text, List<String> names) {
+  var t = text.trim();
+  for (final raw in names) {
+    final name = raw.trim();
+    if (name.isEmpty || t.length <= name.length) continue;
+    if (!t.toLowerCase().startsWith(name.toLowerCase())) continue;
+    final rest = t.substring(name.length);
+    if (rest.startsWith(':') || rest.startsWith('—') || rest.startsWith('\n')) {
+      final cleaned = rest.replaceAll(RegExp(r'^[:—\s]+'), '').trim();
+      if (cleaned.isNotEmpty) return cleaned;
+    }
+  }
+  return t;
+}
+
+/// One display line of a structured text block. [marker] is '' for a plain
+/// line, '•' for a bullet, or '1', '2', … for a numbered point.
+class TextLine {
+  final String text;
+  final String marker;
+  const TextLine(this.text, this.marker);
+}
+
+List<String> _splitSentences(String p) {
+  const abbrev = {'e.g', 'i.e', 'vs', 'approx', 'Fig', 'Dr', 'Mr', 'St', 'No'};
+  final out = <String>[];
+  var start = 0;
+  var i = 0;
+  while (i < p.length - 1) {
+    final c = p[i];
+    if ((c == '.' || c == '!' || c == '?') && p[i + 1] == ' ') {
+      final before = p.substring(start, i).trimRight();
+      final lastWord = before.isEmpty ? '' : before.split(RegExp(r'\s+')).last;
+      final j = i + 2;
+      if (!abbrev.contains(lastWord) &&
+          j < p.length &&
+          RegExp(r'[A-Z0-9(|]').hasMatch(p[j])) {
+        out.add(p.substring(start, i + 1).trim());
+        start = j;
+        i = j;
+        continue;
+      }
+    }
+    i++;
+  }
+  final tail = p.substring(start).trim();
+  if (tail.isNotEmpty) out.add(tail);
+  return out;
+}
+
+final RegExp _numMarkRe = RegExp(r'\((\d{1,2})\)\s*');
+
+/// Breaks a wall-of-text block into readable lines: numbered points
+/// (1) (2) … become separate numbered lines, ' | ' clusters become
+/// bullets, and long prose is split one sentence per bullet line. Lines
+/// that are already separate points become bullets too.
+List<TextLine> structuredLines(String text) {
+  final out = <TextLine>[];
+  for (final para in text.split('\n')) {
+    final p = para.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (p.isEmpty) continue;
+    final marks = _numMarkRe.allMatches(p).toList();
+    var sequential = marks.length >= 2 && marks.first.start <= p.length * 0.45;
+    if (sequential) {
+      for (var k = 0; k < marks.length; k++) {
+        if (int.parse(marks[k].group(1)!) != k + 1) {
+          sequential = false;
+          break;
+        }
+      }
+    }
+    if (sequential) {
+      final intro = p.substring(0, marks.first.start).trim();
+      if (intro.isNotEmpty) out.add(TextLine(intro, ''));
+      for (var k = 0; k < marks.length; k++) {
+        final from = marks[k].end;
+        final to = k + 1 < marks.length ? marks[k + 1].start : p.length;
+        final seg =
+            p.substring(from, to).trim().replaceAll(RegExp(r'[;\s]+$'), '');
+        if (seg.isNotEmpty) out.add(TextLine(seg, '${k + 1}'));
+      }
+      continue;
+    }
+    final pipes = p.split(' | ');
+    if (pipes.length >= 3) {
+      for (final seg in pipes) {
+        final s = seg.trim();
+        if (s.isNotEmpty) out.add(TextLine(s, '•'));
+      }
+      continue;
+    }
+    if (p.length > 200) {
+      final sents = _splitSentences(p);
+      if (sents.length >= 3) {
+        for (final s in sents) {
+          out.add(TextLine(s, '•'));
+        }
+        continue;
+      }
+    }
+    out.add(TextLine(p, ''));
+  }
+  // A block of 3+ plain lines reads better as bullets (e.g. a properties
+  // list where every line is already its own point) — except a first line
+  // that is clearly a lead-in ending with ':'.
+  final hasNumbered = out.any((l) => l.marker.isNotEmpty && l.marker != '•');
+  if (!hasNumbered && out.length >= 3) {
+    for (var i = 0; i < out.length; i++) {
+      if (out[i].marker.isEmpty &&
+          !(i == 0 && out[i].text.trim().endsWith(':'))) {
+        out[i] = TextLine(out[i].text, '•');
+      }
+    }
+  }
+  return out;
+}
+
+/// structuredLines as one plain string (for list cards and the PDF).
+String structuredPlain(String text) {
+  return structuredLines(text)
+      .map((l) => l.marker.isEmpty
+          ? l.text
+          : (l.marker == '•' ? '• ${l.text}' : '${l.marker}. ${l.text}'))
+      .join('\n');
+}
+
+/// Renders text as structured lines — numbered points and bullets get an
+/// indigo marker column instead of running together as one paragraph.
+class StructuredText extends StatelessWidget {
+  final String text;
+  final TextStyle style;
+  const StructuredText({super.key, required this.text, required this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    final lines = structuredLines(text);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final l in lines)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 5),
+            child: l.marker.isEmpty
+                ? Text(l.text, style: style)
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        child: Text(
+                          l.marker == '•' ? '•' : '${l.marker}.',
+                          style: style.copyWith(
+                              fontWeight: FontWeight.w800, color: kPrimary),
+                        ),
+                      ),
+                      Expanded(child: Text(l.text, style: style)),
+                    ],
+                  ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Small kind chip for a card / detail page. Theory entries whose name
+/// starts with PROPERTIES or RULE get their own label and colour, so the
+/// kinds read differently at a glance while scrolling.
+Widget kindBadge(String kind, String rawName) {
+  var label = 'Formula';
+  var bg = const [Color(0xFFE9E5FC), Color(0xFFD9D2F5)];
+  var fg = const Color(0xFF4A3A9E);
+  final up = rawName.trim().toUpperCase();
+  if (kind == 'table') {
+    label = 'Table';
+    bg = const [Color(0xFFFFF1CF), Color(0xFFFFE3A3)];
+    fg = const Color(0xFF8A6D00);
+  } else if (kind == 'theory') {
+    label = 'Theory';
+    bg = const [Color(0xFFFFF1CF), Color(0xFFFFE3A3)];
+    fg = const Color(0xFF8A6D00);
+    if (up.startsWith('PROPERTIES')) {
+      label = 'Properties';
+      bg = const [Color(0xFFCCFBF1), Color(0xFF99F6E4)];
+      fg = const Color(0xFF0F766E);
+    } else if (up.startsWith('RULE')) {
+      label = 'Rule';
+      bg = const [Color(0xFFFFE4E6), Color(0xFFFECDD3)];
+      fg = const Color(0xFF9F1239);
+    }
+  }
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(colors: bg),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(label,
+        style:
+            TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: fg)),
+  );
+}
+
 const List<String> _months = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -493,7 +702,7 @@ Future<void> shareEntry(
     BuildContext context, EntryItem e, Map<String, dynamic> details) async {
   final text = '${displayName(e, details)}\n'
       '${displayText(e.body)}\n\n'
-      '— Maths Formula Sheet\n'
+      '— MathMitra\n'
       'https://yashx.xyz/math-formula-sheet-m1';
   try {
     await Share.share(text, subject: displayName(e, details));
@@ -586,7 +795,7 @@ class FormulaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Maths Formula Sheet',
+      title: 'MathMitra',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: kPrimary),
@@ -678,7 +887,9 @@ class _HomePageState extends State<HomePage> {
   String _query = '';
   String _filter = 'all'; // all | basics | <category slug>
   String _sectionFilter = '';
-  bool _online = false;
+  final ScrollController _scrollCtrl = ScrollController();
+  final FocusNode _searchFocus = FocusNode();
+  final TextEditingController _searchCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -695,7 +906,24 @@ class _HomePageState extends State<HomePage> {
     auth.removeListener(_onAuth);
     BrowseSel.instance.removeListener(_onBrowse);
     DataPing.instance.removeListener(_refreshData);
+    _scrollCtrl.dispose();
+    _searchFocus.dispose();
+    _searchCtrl.dispose();
     super.dispose();
+  }
+
+  /// Slim-bar search icon: scroll back up to the hero and focus the field.
+  void _focusSearch() {
+    if (_scrollCtrl.hasClients && _scrollCtrl.offset > 4) {
+      _scrollCtrl.animateTo(0,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOutCubic);
+      Future.delayed(const Duration(milliseconds: 380), () {
+        if (mounted) _searchFocus.requestFocus();
+      });
+    } else {
+      _searchFocus.requestFocus();
+    }
   }
 
   void _onBrowse() {
@@ -713,10 +941,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _refreshData() async {
     final fresh = await _svc.fetchNetwork();
     if (fresh != null && mounted) {
-      setState(() {
-        _data = fresh;
-        _online = true;
-      });
+      setState(() => _data = fresh);
     }
   }
 
@@ -748,10 +973,7 @@ class _HomePageState extends State<HomePage> {
     if (cached != null && mounted) setState(() => _data = cached);
     final fresh = await _svc.fetchNetwork();
     if (fresh != null && mounted) {
-      setState(() {
-        _data = fresh;
-        _online = true;
-      });
+      setState(() => _data = fresh);
     }
   }
 
@@ -832,140 +1054,150 @@ class _HomePageState extends State<HomePage> {
     final visible = _visible;
     final searching = _query.trim().isNotEmpty;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: kPrimaryDark,
-        flexibleSpace: Container(decoration: kBarDecoration),
-        foregroundColor: Colors.white,
-        title: const Text('Maths Formula Sheet'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            tooltip: 'Add Formula',
-            onPressed: () => _needLogin(
-              'Please log in to add a formula. Your existing website account works here.',
-              FormulaFormPage(categories: _cats),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: Row(children: [
-              Icon(_online ? Icons.cloud_done : Icons.cloud_off, size: 16),
-              const SizedBox(width: 4),
-              Text(_online ? 'Online' : 'Offline',
-                  style: const TextStyle(fontSize: 11.5)),
-            ]),
-          ),
-        ],
-      ),
       drawer: _drawer(),
       body: data == null
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(gradient: kBrandGradient),
-                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
+          : CustomScrollView(
+              controller: _scrollCtrl,
+              slivers: [
+                // Big hero at the top; on scroll it collapses to a slim
+                // pinned strip: menu · MathMitra · search · add.
+                SliverAppBar(
+                  pinned: true,
+                  expandedHeight: 158,
+                  toolbarHeight: 54,
+                  backgroundColor: kPrimaryDark,
+                  foregroundColor: Colors.white,
+                  title: Text('MathMitra',
+                      style: displayStyle(
+                          size: 18,
+                          weight: FontWeight.w700,
+                          color: Colors.white)),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.search),
+                      tooltip: 'Search',
+                      onPressed: _focusSearch,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      tooltip: 'Add Formula',
+                      onPressed: () => _needLogin(
+                        'Please log in to add a formula. Your existing website account works here.',
+                        FormulaFormPage(categories: _cats),
+                      ),
+                    ),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Container(
+                      decoration: const BoxDecoration(gradient: kBrandGradient),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Find any formula.',
+                                style: displayStyle(
+                                    size: 24,
+                                    weight: FontWeight.w700,
+                                    color: Colors.white)),
+                            const SizedBox(height: 10),
+                            TextField(
+                              controller: _searchCtrl,
+                              focusNode: _searchFocus,
+                              decoration: InputDecoration(
+                                hintText: 'Search',
+                                hintStyle: const TextStyle(
+                                    color: Colors.black38, fontSize: 14),
+                                prefixIcon:
+                                    const Icon(Icons.search, color: kPrimary),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide.none,
+                                ),
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                              ),
+                              onChanged: (v) => setState(() => _query = v),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Find any formula.',
-                          style: displayStyle(
-                              size: 25,
-                              weight: FontWeight.w700,
-                              color: Colors.white)),
-                      const SizedBox(height: 3),
-                      Text(
-                        '${data.entries.length} formulas with meaning, symbols and solved examples · Basics + Maths-I Units 1–5',
-                        style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12.5,
-                            height: 1.4),
+                      SizedBox(
+                        height: 46,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          children: [
+                            _chip('all', 'All Formulas'),
+                            _chip('basics', 'All Basics'),
+                            for (final c in data.categories)
+                              _chip(c.slug, c.title),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 13),
-                      TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search… try (a+b)² or Quadratic',
-                          hintStyle:
-                              const TextStyle(color: Colors.black38, fontSize: 14),
-                          prefixIcon:
-                              const Icon(Icons.search, color: kPrimary),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          searching
+                              ? 'Showing ${visible.length} of ${data.entries.length} entries for "${_query.trim()}"'
+                              : 'Showing ${visible.length} of ${data.entries.length} entries',
+                          style: const TextStyle(
+                              fontSize: 13, color: Colors.black54),
+                        ),
+                      ),
+                      if (_sectionFilter.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                          child: InputChip(
+                            avatar: const Icon(Icons.topic_outlined, size: 16),
+                            label: Text('Section: $_sectionFilter'),
+                            onDeleted: () =>
+                                setState(() => _sectionFilter = ''),
+                            deleteIconColor: kPrimary,
                           ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 12),
                         ),
-                        onChanged: (v) => setState(() => _query = v),
-                      ),
+                      const SizedBox(height: 6),
                     ],
                   ),
                 ),
-                SizedBox(
-                  height: 46,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    children: [
-                      _chip('all', 'All Formulas'),
-                      _chip('basics', 'All Basics'),
-                      for (final c in data.categories) _chip(c.slug, c.title),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      searching
-                          ? 'Showing ${visible.length} of ${data.entries.length} entries for "${_query.trim()}"'
-                          : 'Showing ${visible.length} of ${data.entries.length} entries',
-                      style:
-                          const TextStyle(fontSize: 13, color: Colors.black54),
+                if (visible.isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                        child: Text(
+                            'No formula matched. Try a shorter search word.')),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(12, 2, 12, 16),
+                    sliver: SliverList.builder(
+                      itemCount: visible.length +
+                          ((!searching &&
+                                  _filter == 'all' &&
+                                  _sectionFilter.isEmpty &&
+                                  data.syllabus.isNotEmpty)
+                              ? 1
+                              : 0),
+                      itemBuilder: (context, i) {
+                        if (i == visible.length) {
+                          return _syllabusCard(data.syllabus.first);
+                        }
+                        return _entryCard(visible[i], data);
+                      },
                     ),
                   ),
-                ),
-                if (_sectionFilter.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: InputChip(
-                        avatar: const Icon(Icons.topic_outlined, size: 16),
-                        label: Text('Section: $_sectionFilter'),
-                        onDeleted: () => setState(() => _sectionFilter = ''),
-                        deleteIconColor: kPrimary,
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 6),
-                Expanded(
-                  child: visible.isEmpty
-                      ? const Center(
-                          child: Text(
-                              'No formula matched. Try a shorter search word.'))
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(12, 2, 12, 16),
-                          itemCount: visible.length +
-                              ((!searching &&
-                                      _filter == 'all' &&
-                                      _sectionFilter.isEmpty &&
-                                      data.syllabus.isNotEmpty)
-                                  ? 1
-                                  : 0),
-                          itemBuilder: (context, i) {
-                            if (i == visible.length) {
-                              return _syllabusCard(data.syllabus.first);
-                            }
-                            return _entryCard(visible[i], data);
-                          },
-                        ),
-                ),
               ],
             ),
     );
@@ -986,7 +1218,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const Text('Maths Formula Sheet',
+                const Text('MathMitra',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 19,
@@ -1161,14 +1393,19 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                               ),
-                              _kindBadge(e.kind),
+                              kindBadge(e.kind, displayText(e.name)),
                             ],
                           ),
                           const SizedBox(height: 8),
                           // Theory entries show their FULL text in the list;
                           // formulas get a compact preview.
                           Text(
-                            displayText(e.body),
+                            fullText
+                                ? structuredPlain(stripTitlePrefix(
+                                    displayText(e.body),
+                                    [displayText(e.name), displayName(e, _details)]))
+                                : stripTitlePrefix(displayText(e.body),
+                                    [displayText(e.name), displayName(e, _details)]),
                             maxLines: fullText ? null : 3,
                             overflow: fullText
                                 ? TextOverflow.visible
@@ -1242,30 +1479,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _kindBadge(String kind) {
-    final warm = kind != 'formula';
-    final label =
-        kind == 'theory' ? 'Theory' : (kind == 'table' ? 'Table' : 'Formula');
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        gradient: warm
-            ? const LinearGradient(
-                colors: [Color(0xFFFFF1CF), Color(0xFFFFE3A3)])
-            : const LinearGradient(
-                colors: [Color(0xFFE9E5FC), Color(0xFFD9D2F5)]),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(label,
-          style: TextStyle(
-              fontSize: 10.5,
-              fontWeight: FontWeight.w700,
-              color: warm
-                  ? const Color(0xFF8A6D00)
-                  : const Color(0xFF4A3A9E))),
     );
   }
 
@@ -1346,14 +1559,22 @@ class DetailPage extends StatelessWidget {
                 size: 23, weight: FontWeight.w700, color: const Color(0xFF1E1B4B)),
           ),
           const SizedBox(height: 4),
-          Text(
-            entry.section.isEmpty
-                ? categoryTitle
-                : '$categoryTitle · ${entry.section}',
-            style: const TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF7C6AA8)),
+          Row(
+            children: [
+              kindBadge(entry.kind, displayText(entry.name)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  entry.section.isEmpty
+                      ? categoryTitle
+                      : '$categoryTitle · ${entry.section}',
+                  style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF7C6AA8)),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           TweenAnimationBuilder<double>(
@@ -1383,19 +1604,26 @@ class DetailPage extends StatelessWidget {
                       offset: Offset(0, 5)),
                 ],
               ),
-              child: Text(
-                displayText(entry.body),
-                textAlign: (entry.kind == 'theory' || entry.kind == 'table')
-                    ? TextAlign.left
-                    : TextAlign.center,
-                style: (entry.kind == 'theory' || entry.kind == 'table')
-                    ? const TextStyle(fontSize: 15.5, height: 1.55)
-                    : displayStyle(
-                        size: 21,
-                        weight: FontWeight.w600,
-                        color: const Color(0xFF26215C),
-                        height: 1.5),
-              ),
+              child: entry.kind == 'theory'
+                  ? StructuredText(
+                      text: stripTitlePrefix(displayText(entry.body),
+                          [displayText(entry.name), name]),
+                      style: const TextStyle(fontSize: 15.5, height: 1.55),
+                    )
+                  : Text(
+                      stripTitlePrefix(displayText(entry.body),
+                          [displayText(entry.name), name]),
+                      textAlign: entry.kind == 'table'
+                          ? TextAlign.left
+                          : TextAlign.center,
+                      style: entry.kind == 'table'
+                          ? const TextStyle(fontSize: 15.5, height: 1.55)
+                          : displayStyle(
+                              size: 21,
+                              weight: FontWeight.w600,
+                              color: const Color(0xFF26215C),
+                              height: 1.5),
+                    ),
             ),
           ),
           if (entry.userAdded && entry.authorName.isNotEmpty) ...[
@@ -1481,14 +1709,40 @@ class DetailPage extends StatelessWidget {
                   weight: FontWeight.w700,
                   color: green ? const Color(0xFF22702C) : kPrimary)),
           const SizedBox(height: 5),
-          Text(text, style: const TextStyle(fontSize: 14.5, height: 1.55)),
+          StructuredText(
+              text: text,
+              style: const TextStyle(fontSize: 14.5, height: 1.55)),
         ],
       ),
     );
   }
 
   Widget _symbolsBlock(String symbols) {
-    final lines = symbols.split('\n').where((l) => l.trim().isNotEmpty);
+    final parts = <String>[];
+    for (final line in displayText(symbols).split('\n')) {
+      var segs = line
+          .split(';')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+      if (segs.length == 1) {
+        final s = segs[0];
+        if (' = '.allMatches(s).length >= 3 && s.contains(', ')) {
+          segs = s
+              .split(', ')
+              .map((x) => x.trim())
+              .where((x) => x.isNotEmpty)
+              .toList();
+        } else if (s.contains(' · ')) {
+          segs = s
+              .split(' · ')
+              .map((x) => x.trim())
+              .where((x) => x.isNotEmpty)
+              .toList();
+        }
+      }
+      parts.addAll(segs);
+    }
     return Padding(
       padding: const EdgeInsets.only(bottom: 13),
       child: Column(
@@ -1498,12 +1752,30 @@ class DetailPage extends StatelessWidget {
               style: displayStyle(
                   size: 14.5, weight: FontWeight.w700, color: kPrimary)),
           const SizedBox(height: 5),
-          for (final line in lines)
+          for (final p in parts)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Text(displayText(line),
-                  style: const TextStyle(fontSize: 14.5, height: 1.5)),
+              padding: const EdgeInsets.symmetric(vertical: 2.5),
+              child: _symbolRow(p),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _symbolRow(String p) {
+    const style = TextStyle(fontSize: 14.5, height: 1.5);
+    var cut = p.indexOf(' = ');
+    if (cut < 0) cut = p.indexOf(' ≈ ');
+    if (cut <= 0 || cut > 24) return Text(p, style: style);
+    return RichText(
+      text: TextSpan(
+        style: style.copyWith(color: Colors.black87),
+        children: [
+          TextSpan(
+              text: p.substring(0, cut),
+              style: displayStyle(
+                  size: 14.5, weight: FontWeight.w700, color: kPrimary)),
+          TextSpan(text: p.substring(cut)),
         ],
       ),
     );
@@ -1739,7 +2011,7 @@ class _AddHubPageState extends State<AddHubPage> {
         padding: const EdgeInsets.all(14),
         children: [
           const Text(
-            'Contribute to the sheet — add a formula, start a new class or category, or upload syllabus notes. Your name shows as the author.',
+            'Add formulas, classes and syllabus notes — your name shows as the author.',
             style: TextStyle(fontSize: 13.5, color: Colors.black54, height: 1.5),
           ),
           const SizedBox(height: 14),
@@ -1818,12 +2090,15 @@ class MorePage extends StatefulWidget {
 class _MorePageState extends State<MorePage> {
   final DataService _svc = DataService();
   List<CategoryItem> _cats = const [];
+  SheetData? _data;
+  Map<String, dynamic> _details = {};
+  bool _pdfBusy = false;
 
   @override
   void initState() {
     super.initState();
     auth.addListener(_onAuth);
-    _loadCats();
+    _loadData();
   }
 
   @override
@@ -1836,11 +2111,37 @@ class _MorePageState extends State<MorePage> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _loadCats() async {
+  Future<void> _loadData() async {
     final d = await _svc.loadCache() ?? await _svc.loadBundled();
-    if (mounted) setState(() => _cats = d.categories);
+    if (mounted) {
+      setState(() {
+        _cats = d.categories;
+        _data = d;
+      });
+    }
+    _svc.details().then((det) {
+      if (mounted) setState(() => _details = det);
+    });
     final fresh = await _svc.fetchNetwork();
-    if (fresh != null && mounted) setState(() => _cats = fresh.categories);
+    if (fresh != null && mounted) {
+      setState(() {
+        _cats = fresh.categories;
+        _data = fresh;
+      });
+    }
+  }
+
+  Future<void> _makePdf() async {
+    setState(() => _pdfBusy = true);
+    try {
+      final data = _data ?? await _svc.loadBundled();
+      await exportAllFormulasPdf(data, _details);
+    } catch (_) {
+      if (mounted) {
+        showMsg(context, 'Could not create the PDF. Please try again.');
+      }
+    }
+    if (mounted) setState(() => _pdfBusy = false);
   }
 
   void _push(Widget page) {
@@ -1870,7 +2171,7 @@ class _MorePageState extends State<MorePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Maths Formula Sheet',
+                const Text('MathMitra',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 19,
@@ -1885,6 +2186,20 @@ class _MorePageState extends State<MorePage> {
               ],
             ),
           ),
+          ListTile(
+            leading:
+                const Icon(Icons.picture_as_pdf_outlined, color: kPrimary),
+            title: const Text('Download All Formulas (PDF)'),
+            subtitle: const Text('Well-structured PDF of all formulas'),
+            trailing: _pdfBusy
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.download_outlined, color: kPrimary),
+            onTap: _pdfBusy ? null : _makePdf,
+          ),
+          const Divider(),
           if (loggedIn)
             ListTile(
               leading: const Icon(Icons.list_alt_outlined),
