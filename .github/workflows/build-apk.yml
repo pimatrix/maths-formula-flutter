@@ -40,27 +40,15 @@ jobs:
           // Maven Central's own CDN redirects a few large artifacts (e.g. the
           // Kotlin compiler) to GitHub releases, which intermittently time out
           // (HTTP 504). Google's mirror serves the same artifacts directly.
+          // NOTE: inject ONLY into settings-level dependency resolution.
+          // Injecting pluginManagement or project repositories conflicts with
+          // Flutter's settings (RepositoriesMode) and breaks plugin loading.
           def mirror = 'https://maven-central.storage-download.googleapis.com/maven2'
           beforeSettings { settings ->
-              settings.pluginManagement {
-                  repositories {
-                      maven { url mirror }
-                  }
-              }
               settings.dependencyResolutionManagement {
                   repositories {
                       maven { url mirror }
                   }
-              }
-          }
-          allprojects {
-              buildscript {
-                  repositories {
-                      maven { url mirror }
-                  }
-              }
-              repositories {
-                  maven { url mirror }
               }
           }
           GRADLE
