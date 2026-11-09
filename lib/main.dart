@@ -17,7 +17,7 @@ import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
 const String kSiteUrl = 'https://yashx.xyz/MathMitra';
-const String kAppVersion = '1.1.5';
+const String kAppVersion = '1.1.6';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -156,6 +156,11 @@ class _MathLoaderState extends State<MathLoader>
     return (1 - (2 * t - 1).abs());
   }
 }
+
+/// Card previews: seed bodies pack several labelled parts into one
+/// line, separated by wide space runs (from the &nbsp; separators in the
+/// source) — break them onto their own lines so cards read cleanly.
+String cardBody(String text) => text.replaceAll(RegExp(r' {3,}'), '\n');
 
 /// Formula ink: dark indigo on light surfaces, light lavender on dark.
 Color formulaInk(BuildContext context) =>
@@ -983,11 +988,20 @@ class _FormulaAppState extends State<FormulaApp> {
         ),
         darkTheme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-              seedColor: kPrimary, brightness: Brightness.dark),
+                  seedColor: kPrimary, brightness: Brightness.dark)
+              .copyWith(
+            // Grey family surfaces — the old near-black felt too dark.
+            surface: const Color(0xFF26262E),
+            surfaceContainerLowest: const Color(0xFF1C1C22),
+            surfaceContainerLow: const Color(0xFF222228),
+            surfaceContainer: const Color(0xFF26262E),
+            surfaceContainerHigh: const Color(0xFF2E2E37),
+            surfaceContainerHighest: const Color(0xFF383842),
+          ),
           useMaterial3: true,
           fontFamily: 'Inter',
-          scaffoldBackgroundColor: const Color(0xFF0F0F16),
-          navigationBarTheme: _navTheme(const Color(0xFF17171F),
+          scaffoldBackgroundColor: const Color(0xFF1C1C22),
+          navigationBarTheme: _navTheme(const Color(0xFF26262E),
               const Color(0xFF3730A3), const Color(0xFFA5B4FC), Colors.white54),
         ),
         home: const MainShell(),
@@ -1583,8 +1597,8 @@ class _HomePageState extends State<HomePage> {
                                 ? structuredPlain(stripTitlePrefix(
                                     displayText(e.body),
                                     [displayText(e.name), displayName(e, _details)]))
-                                : stripTitlePrefix(displayText(e.body),
-                                    [displayText(e.name), displayName(e, _details)]),
+                                : cardBody(stripTitlePrefix(displayText(e.body),
+                                    [displayText(e.name), displayName(e, _details)])),
                             maxLines: fullText ? null : 3,
                             overflow: fullText
                                 ? TextOverflow.visible

@@ -1393,6 +1393,128 @@ class _AdminPageState extends State<AdminPage> {
     }
   }
 
+  Widget _tile({
+    required IconData icon,
+    required String title,
+    required String sub,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Icon(icon, color: kPrimary),
+        title: Text(title,
+            style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600)),
+        subtitle: Text(sub, style: const TextStyle(fontSize: 12.5)),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _graphCard() {
+    final days = (_overview!['days'] as List<dynamic>?) ?? const [];
+    if (days.isEmpty) return const SizedBox.shrink();
+    var maxV = 1;
+    for (final d in days) {
+      final m = d as Map<String, dynamic>;
+      final pv = (m['pageviews'] as num?)?.toInt() ?? 0;
+      final vw = (m['views'] as num?)?.toInt() ?? 0;
+      if (pv > maxV) maxV = pv;
+      if (vw > maxV) maxV = vw;
+    }
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    String label(Object? iso) {
+      final str = (iso ?? '').toString();
+      if (str.length < 10) return '';
+      final mo = int.tryParse(str.substring(5, 7)) ?? 1;
+      final dy = int.tryParse(str.substring(8, 10)) ?? 1;
+      return '$dy ${months[(mo - 1).clamp(0, 11)]}';
+    }
+
+    Widget bar(int v, Color color) {
+      final h = v <= 0 ? 0.0 : (92.0 * v / maxV).clamp(2.0, 92.0);
+      return Container(
+        width: 7,
+        height: h,
+        decoration: BoxDecoration(
+            color: color, borderRadius: BorderRadius.circular(3)),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Analytics — last 14 days',
+                style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Container(
+                    width: 9,
+                    height: 9,
+                    decoration: const BoxDecoration(
+                        color: kPrimary, shape: BoxShape.circle)),
+                const SizedBox(width: 6),
+                const Text('Pageviews', style: TextStyle(fontSize: 12)),
+                const SizedBox(width: 16),
+                Container(
+                    width: 9,
+                    height: 9,
+                    decoration: const BoxDecoration(
+                        color: Color(0xFF8B5CF6), shape: BoxShape.circle)),
+                const SizedBox(width: 6),
+                const Text('Formula views', style: TextStyle(fontSize: 12)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 96,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  for (final d in days)
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          bar((d as Map)['pageviews'] as int? ?? 0, kPrimary),
+                          const SizedBox(width: 2),
+                          bar(d['views'] as int? ?? 0,
+                              const Color(0xFF8B5CF6)),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                for (final e in days.asMap().entries)
+                  Expanded(
+                    child: Text(
+                      e.key % 2 == 0 ? label(e.value['date']) : '',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 9.5, color: subtleColor(context)),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _saveLimit() async {
     final n = int.tryParse(_limitCtrl.text.trim());
     if (n == null || n < 1 || n > 1000) {
@@ -1677,124 +1799,571 @@ class _AdminPageState extends State<AdminPage> {
             const SizedBox(height: 14),
             _aiLimitCard(),
             const SizedBox(height: 18),
-            Row(
-              children: [
-                Container(
-                  width: 9,
-                  height: 9,
-                  decoration: const BoxDecoration(
-                      color: Colors.green, shape: BoxShape.circle),
-                ),
-                const SizedBox(width: 8),
-                const Text('Active users — last 15 minutes',
-                    style:
-                        TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
-              ],
-            ),
+            _graphCard(),
+            const SizedBox(height: 18),
+            const Text('Sections',
+                style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
-            if (activeUsers.isEmpty)
-              Text('Nobody is active right now.',
-                  style: TextStyle(color: subtleColor(context), fontSize: 13.5)),
-            for (final u in activeUsers)
-              _activeTile(u as Map<String, dynamic>),
-            _topList('Most viewed formulas',
-                _overview!['topFormulas'] as List<dynamic>?),
-            _topList('Top categories',
-                _overview!['topCategories'] as List<dynamic>?),
-            _topList('Top countries',
-                _overview!['topCountries'] as List<dynamic>?),
-            _topList('Top devices',
-                _overview!['topDevices'] as List<dynamic>?),
-            _topList('Top operating systems',
-                _overview!['topOS'] as List<dynamic>?),
-            _topList('Top browsers',
-                _overview!['topBrowsers'] as List<dynamic>?),
-            _topList('Top referrers',
-                _overview!['topReferrers'] as List<dynamic>?),
-            _eventList(
-              'Recent formula views',
-              _overview!['recentViews'] as List<dynamic>?,
-              (e) => (e['formula_name'] as String?) ?? 'Formula',
-              (e) => [_who(e), _dev(e), _when(e['created_at'])]
-                  .where((x) => x.isNotEmpty)
-                  .join(' · '),
+            _tile(
+              icon: Icons.people_alt_outlined,
+              title: 'Visitors',
+              sub:
+                  '${t['visitors'] ?? 0} people in total · ${activeUsers.length} active now',
+              onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const VisitorsPage())),
             ),
-            _eventList(
-              'Recent visitors',
-              _overview!['recentVisitors'] as List<dynamic>?,
-              (e) => (e['path'] as String?) ?? '/',
-              (e) => [
-                _who(e),
-                _dev(e),
-                if (e['ip'] != null) '${e['ip']}',
-                [e['city'], e['country']]
-                    .where((x) => x != null && '$x'.isNotEmpty)
-                    .join(', '),
-                if (e['battery_level'] != null)
-                  'Battery ${e['battery_level']}%',
-                _when(e['created_at']),
-              ].where((x) => x.isNotEmpty).join(' · '),
-              take: 20,
+            _tile(
+              icon: Icons.manage_accounts_outlined,
+              title: 'Users — manage admins',
+              sub: '${_users.length} accounts',
+              onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const UsersPage())),
             ),
-            _eventList(
-              'Recent shares',
-              _overview!['recentShares'] as List<dynamic>?,
-              (e) => (e['formula_name'] as String?) ?? 'Formula',
-              (e) => [
-                _who(e),
-                [e['city'], e['country']]
-                    .where((x) => x != null && '$x'.isNotEmpty)
-                    .join(', '),
-                _when(e['created_at']),
-              ].where((x) => x.isNotEmpty).join(' · '),
+            _tile(
+              icon: Icons.functions,
+              title: 'Formula views',
+              sub: '${t['formulaViews'] ?? 0} views in total',
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => EventListPage(
+                        title: 'Formula views',
+                        rows: [
+                          for (final e
+                              in (_overview!['recentViews'] as List<dynamic>? ??
+                                  const []))
+                            {
+                              'title':
+                                  ((e as Map)['formula_name'] as String?) ??
+                                      'Formula',
+                              'sub': [
+                                _who(e as Map<String, dynamic>),
+                                _dev(e as Map<String, dynamic>),
+                                _when((e as Map<String, dynamic>)['created_at'])
+                              ].where((x) => x.isNotEmpty).join(' · '),
+                            },
+                        ],
+                      ))),
             ),
-            const SizedBox(height: 18),
-            const Text('Recent additions',
-                style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            if (recent.isEmpty)
-              Text('No additions yet.',
-                  style: TextStyle(color: subtleColor(context), fontSize: 13.5)),
-            for (final a in recent.take(10))
-              ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                title: Text('${(a as Map)['name'] ?? ''}',
-                    style: const TextStyle(fontSize: 13.5)),
-                subtitle: Text(
-                    '${a['author_email'] ?? ''} · ${(a['created_at'] ?? '').toString().substring(0, 10)}',
-                    style: const TextStyle(fontSize: 12)),
-              ),
-            const SizedBox(height: 18),
-            const Text('Users — manage admins',
-                style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            for (final u in _users)
-              ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                title: Text('${(u as Map)['email'] ?? ''}',
-                    style: const TextStyle(fontSize: 13.5)),
-                subtitle: Text(
-                    '${u['role'] ?? 'user'}${u['study_level'] != null && u['study_level'] != '' ? ' · ${u['study_level']}' : ''}${u['institution'] != null && u['institution'] != '' ? ' · ${u['institution']}' : ''}',
-                    style: const TextStyle(fontSize: 12)),
-                trailing: (u['lockedAdmin'] == true)
-                    ? const Chip(
-                        label: Text('Admin (fixed)',
-                            style: TextStyle(fontSize: 11)))
-                    : (u['role'] == 'admin'
-                        ? TextButton(
-                            onPressed: () =>
-                                _setRole(u as Map<String, dynamic>, 'user'),
-                            child: const Text('Remove Admin',
-                                style: TextStyle(color: Colors.red)))
-                        : TextButton(
-                            onPressed: () =>
-                                _setRole(u as Map<String, dynamic>, 'admin'),
-                            child: const Text('Make Admin'))),
-              ),
+            _tile(
+              icon: Icons.share_outlined,
+              title: 'Shares',
+              sub: '${t['shares'] ?? 0} shares in total',
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => EventListPage(
+                        title: 'Shares',
+                        rows: [
+                          for (final e
+                              in (_overview!['recentShares'] as List<dynamic>? ??
+                                  const []))
+                            {
+                              'title':
+                                  ((e as Map)['formula_name'] as String?) ??
+                                      'Formula',
+                              'sub': [
+                                _who(e as Map<String, dynamic>),
+                                [(e as Map<String, dynamic>)['city'], (e as Map<String, dynamic>)['country']]
+                                    .where((x) => x != null && '$x'.isNotEmpty)
+                                    .join(', '),
+                                _when((e as Map<String, dynamic>)['created_at'])
+                              ].where((x) => x.isNotEmpty).join(' · '),
+                            },
+                        ],
+                      ))),
+            ),
+            _tile(
+              icon: Icons.insights_outlined,
+              title: 'Insights',
+              sub: 'Top formulas, places, devices & recent additions',
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => InsightsPage(overview: _overview!))),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ================= Admin sub-pages (structured dashboard) =================
+
+String vWho(Map<String, dynamic> e) => (e['user_email'] as String?) ?? 'Visitor';
+
+String vDev(Map<String, dynamic> e) => [e['device'], e['model'], e['os'], e['browser']]
+    .where((x) => x != null && '$x'.isNotEmpty)
+    .join(' · ');
+
+String vPlace(Map<String, dynamic> e) => [e['city'], e['country']]
+    .where((x) => x != null && '$x'.isNotEmpty)
+    .join(', ');
+
+String vWhen(Object? iso) {
+  final s = (iso ?? '').toString();
+  if (s.length < 16) return s;
+  return s.replaceFirst('T', ' ').substring(0, 16);
+}
+
+String vAgo(Map<String, dynamic> v) {
+  if (v['active_now'] == true) return 'Active now';
+  final m = (v['minutes_ago'] as num?)?.toInt() ?? 0;
+  if (m < 1) return 'Last active just now';
+  if (m < 60) return 'Last active $m min ago';
+  if (m < 1440) return 'Last active ${(m / 60).floor()} h ago';
+  return 'Last active ${(m / 1440).floor()} d ago';
+}
+
+/// Visitors: one row per person. Green dot = active in the last
+/// 15 minutes; amber dot = last active earlier. Tap a row for the
+/// visitor's full timeline.
+class VisitorsPage extends StatefulWidget {
+  const VisitorsPage({super.key});
+
+  @override
+  State<VisitorsPage> createState() => _VisitorsPageState();
+}
+
+class _VisitorsPageState extends State<VisitorsPage> {
+  List<dynamic> _visitors = [];
+  bool _loading = true;
+  String _error = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final r = await auth.api('/api/admin/visitors');
+      if (r.statusCode == 200) {
+        _visitors =
+            (jsonDecode(r.body) as Map<String, dynamic>)['visitors'] as List<dynamic>? ??
+                [];
+      } else {
+        _error = apiError(r);
+      }
+    } catch (_) {
+      _error = 'Network error.';
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: featureBar('Visitors'),
+      body: _loading
+          ? const MathLoader()
+          : _error.isNotEmpty
+              ? Center(child: Text(_error))
+              : _visitors.isEmpty
+                  ? const Center(child: Text('No visitors yet.'))
+                  : RefreshIndicator(
+                      onRefresh: _load,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: _visitors.length,
+                        itemBuilder: (context, i) {
+                          final v = _visitors[i] as Map<String, dynamic>;
+                          final active = v['active_now'] == true;
+                          final counts = [
+                            if ((v['pageviews'] as num? ?? 0) > 0)
+                              '${v['pageviews']} pageviews',
+                            if ((v['formula_views'] as num? ?? 0) > 0)
+                              '${v['formula_views']} formulas',
+                            if ((v['shares'] as num? ?? 0) > 0)
+                              '${v['shares']} shares',
+                            if ((v['questions'] as num? ?? 0) > 0)
+                              '${v['questions']} AI questions',
+                          ].join(' · ');
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              leading: Container(
+                                width: 13,
+                                height: 13,
+                                decoration: BoxDecoration(
+                                  color: active
+                                      ? const Color(0xFF22C55E)
+                                      : const Color(0xFFF59E0B),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              title: Text(vWho(v),
+                                  style: const TextStyle(
+                                      fontSize: 14, fontWeight: FontWeight.w600)),
+                              subtitle: Text(
+                                [
+                                  if (vDev(v).isNotEmpty) vDev(v),
+                                  if (vPlace(v).isNotEmpty) vPlace(v),
+                                  vAgo(v),
+                                  if (counts.isNotEmpty) counts,
+                                ].join('\n'),
+                                style: const TextStyle(fontSize: 12, height: 1.45),
+                              ),
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                    builder: (_) => VisitorDetailPage(visitor: v)),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+    );
+  }
+}
+
+/// One visitor's story: who/where/device + everything they did.
+class VisitorDetailPage extends StatefulWidget {
+  final Map<String, dynamic> visitor;
+  const VisitorDetailPage({super.key, required this.visitor});
+
+  @override
+  State<VisitorDetailPage> createState() => _VisitorDetailPageState();
+}
+
+class _VisitorDetailPageState extends State<VisitorDetailPage> {
+  Map<String, dynamic>? _info;
+  List<dynamic> _events = [];
+  bool _loading = true;
+  String _error = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final v = widget.visitor;
+    final email = v['user_email'] as String?;
+    final vid = v['visitor_id'] as String?;
+    final ip = v['ip'] as String?;
+    final q = email != null
+        ? 'email=${Uri.encodeQueryComponent(email)}'
+        : vid != null
+            ? 'visitor_id=${Uri.encodeQueryComponent(vid)}'
+            : 'ip=${Uri.encodeQueryComponent(ip ?? '')}';
+    try {
+      final r = await auth.api('/api/admin/visitor?$q');
+      if (r.statusCode == 200) {
+        final d = jsonDecode(r.body) as Map<String, dynamic>;
+        _info = d['info'] as Map<String, dynamic>?;
+        _events = d['events'] as List<dynamic>? ?? [];
+      } else {
+        _error = apiError(r);
+      }
+    } catch (_) {
+      _error = 'Network error.';
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  IconData _icon(String? type) {
+    switch (type) {
+      case 'formula_view':
+        return Icons.functions;
+      case 'share':
+        return Icons.share_outlined;
+      case 'ai_question':
+        return Icons.auto_awesome_outlined;
+      case 'pageview':
+        return Icons.visibility_outlined;
+      default:
+        return Icons.bolt_outlined;
+    }
+  }
+
+  String _title(Map<String, dynamic> e) {
+    switch (e['type']) {
+      case 'formula_view':
+        return 'Saw formula: ${(e['formula_name'] as String?) ?? ''}';
+      case 'share':
+        return 'Shared: ${(e['formula_name'] as String?) ?? ''}';
+      case 'ai_question':
+        return 'Asked the AI Tutor';
+      case 'pageview':
+        return 'Opened ${(e['path'] as String?) ?? 'the app'}';
+      default:
+        return (e['type'] as String?) ?? 'Activity';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final v = widget.visitor;
+    return Scaffold(
+      appBar: featureBar(vWho(v)),
+      body: _loading
+          ? const MathLoader()
+          : _error.isNotEmpty
+              ? Center(child: Text(_error))
+              : ListView(
+                  padding: const EdgeInsets.all(14),
+                  children: [
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: BoxDecoration(
+                                    color: _info?['active_now'] == true
+                                        ? const Color(0xFF22C55E)
+                                        : const Color(0xFFF59E0B),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _info?['active_now'] == true
+                                      ? 'Active now'
+                                      : vAgo(_info ?? v),
+                                  style: const TextStyle(
+                                      fontSize: 13.5, fontWeight: FontWeight.w700),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              [
+                                if (vDev(_info ?? v).isNotEmpty) vDev(_info ?? v),
+                                if (vPlace(_info ?? v).isNotEmpty) vPlace(_info ?? v),
+                                if ((_info ?? v)['ip'] != null) 'IP ${(_info ?? v)['ip']}',
+                                if ((_info ?? v)['network'] != null) '${(_info ?? v)['network']}',
+                                if ((_info ?? v)['battery_level'] != null)
+                                  'Battery ${(_info ?? v)['battery_level']}%',
+                                'First seen ${vWhen((_info ?? v)['first_seen'])}',
+                                'Last seen ${vWhen((_info ?? v)['last_seen'])}',
+                                '${(_info ?? v)['total'] ?? _events.length} actions in total',
+                              ].join('\n'),
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  height: 1.55,
+                                  color: subtleColor(context)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    const Text('What they did',
+                        style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 6),
+                    for (final e in _events)
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(_icon((e as Map)['type'] as String?),
+                            size: 19, color: kPrimary),
+                        title: Text(_title(e as Map<String, dynamic>),
+                            style: const TextStyle(fontSize: 13.5)),
+                        subtitle: Text(
+                          [
+                            if (e['category'] != null) '${e['category']}',
+                            vWhen(e['created_at']),
+                          ].where((x) => x.isNotEmpty).join(' · '),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                  ],
+                ),
+    );
+  }
+}
+
+/// All accounts + admin role management (moved off the dashboard).
+class UsersPage extends StatefulWidget {
+  const UsersPage({super.key});
+
+  @override
+  State<UsersPage> createState() => _UsersPageState();
+}
+
+class _UsersPageState extends State<UsersPage> {
+  List<dynamic> _users = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final r = await auth.api('/api/admin/users');
+      if (r.statusCode == 200) {
+        _users = (jsonDecode(r.body) as Map<String, dynamic>)['users'] as List<dynamic>? ??
+            [];
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _setRole(Map<String, dynamic> u, String role) async {
+    final r = await auth.api('/api/admin/users',
+        method: 'POST', body: {'userId': u['id'], 'role': role});
+    if (!mounted) return;
+    if (r.statusCode == 200) {
+      showMsg(context, 'Role updated.');
+      _load();
+    } else {
+      showMsg(context, apiError(r));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: featureBar('Users — manage admins'),
+      body: _loading
+          ? const MathLoader()
+          : ListView(
+              padding: const EdgeInsets.all(12),
+              children: [
+                for (final u in _users)
+                  ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('${(u as Map)['email'] ?? ''}',
+                        style: const TextStyle(fontSize: 13.5)),
+                    subtitle: Text(
+                        '${u['role'] ?? 'user'}${u['study_level'] != null && u['study_level'] != '' ? ' · ${u['study_level']}' : ''}${u['institution'] != null && u['institution'] != '' ? ' · ${u['institution']}' : ''}',
+                        style: const TextStyle(fontSize: 12)),
+                    trailing: (u['lockedAdmin'] == true)
+                        ? const Chip(
+                            label: Text('Admin (fixed)',
+                                style: TextStyle(fontSize: 11)))
+                        : (u['role'] == 'admin'
+                            ? TextButton(
+                                onPressed: () =>
+                                    _setRole(u as Map<String, dynamic>, 'user'),
+                                child: const Text('Remove Admin',
+                                    style: TextStyle(color: Colors.red)))
+                            : TextButton(
+                                onPressed: () =>
+                                    _setRole(u as Map<String, dynamic>, 'admin'),
+                                child: const Text('Make Admin'))),
+                  ),
+              ],
+            ),
+    );
+  }
+}
+
+/// A simple titled list (formula views, shares) behind a dashboard tile.
+class EventListPage extends StatelessWidget {
+  final String title;
+  final List<Map<String, String>> rows;
+  const EventListPage({super.key, required this.title, required this.rows});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: featureBar(title),
+      body: rows.isEmpty
+          ? const Center(child: Text('Nothing yet.'))
+          : ListView.builder(
+              padding: const EdgeInsets.all(14),
+              itemCount: rows.length,
+              itemBuilder: (context, i) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(rows[i]['title'] ?? '',
+                        style: const TextStyle(fontSize: 13.5)),
+                    Text(rows[i]['sub'] ?? '',
+                        style: TextStyle(
+                            fontSize: 12, color: subtleColor(context))),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+}
+
+/// Top lists + recent additions, behind the Insights tile.
+class InsightsPage extends StatelessWidget {
+  final Map<String, dynamic> overview;
+  const InsightsPage({super.key, required this.overview});
+
+  Widget _top(String title, List<dynamic>? items, BuildContext context) {
+    if (items == null || items.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+          for (final it in items)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: [
+                  Expanded(
+                      child: Text('${(it as Map)['name'] ?? ''}',
+                          style: const TextStyle(fontSize: 13.5))),
+                  Text('${it['count'] ?? ''}',
+                      style: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final recent = (overview['recentActivity'] as List<dynamic>?) ?? const [];
+    return Scaffold(
+      appBar: featureBar('Insights'),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _top('Most viewed formulas',
+              overview['topFormulas'] as List<dynamic>?, context),
+          _top('Top categories', overview['topCategories'] as List<dynamic>?,
+              context),
+          _top('Top countries', overview['topCountries'] as List<dynamic>?,
+              context),
+          _top('Top devices', overview['topDevices'] as List<dynamic>?, context),
+          _top('Top operating systems', overview['topOS'] as List<dynamic>?,
+              context),
+          _top('Top browsers', overview['topBrowsers'] as List<dynamic>?,
+              context),
+          _top('Top referrers', overview['topReferrers'] as List<dynamic>?,
+              context),
+          const Text('Recent additions',
+              style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+          if (recent.isEmpty)
+            Text('No additions yet.',
+                style: TextStyle(color: subtleColor(context), fontSize: 13.5)),
+          for (final a in recent.take(15))
+            ListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: Text('${(a as Map)['name'] ?? ''}',
+                  style: const TextStyle(fontSize: 13.5)),
+              subtitle: Text(
+                  '${a['author_email'] ?? ''} · ${(a['created_at'] ?? '').toString().substring(0, 10)}',
+                  style: const TextStyle(fontSize: 12)),
+            ),
+        ],
       ),
     );
   }
