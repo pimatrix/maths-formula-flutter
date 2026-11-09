@@ -17,7 +17,7 @@ import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
 const String kSiteUrl = 'https://yashx.xyz/MathMitra';
-const String kAppVersion = '1.2.1';
+const String kAppVersion = '1.2.2';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -1419,12 +1419,19 @@ class _HomePageState extends State<HomePage> {
                       tooltip: 'Search',
                       onPressed: _focusSearch,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.add_circle_outline),
-                      tooltip: 'Add Formula',
-                      onPressed: () => _needLogin(
-                        'Please log in to add a formula. Your existing website account works here.',
-                        FormulaFormPage(categories: _cats),
+                    ListenableBuilder(
+                      listenable: noticesSvc,
+                      builder: (context, _) => IconButton(
+                        icon: Badge(
+                          isLabelVisible: noticesSvc.unread > 0,
+                          label: Text('${noticesSvc.unread}'),
+                          child:
+                              const Icon(Icons.notifications_none_outlined),
+                        ),
+                        tooltip: 'Notices',
+                        onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const NoticesPage())),
                       ),
                     ),
                   ],
@@ -1622,6 +1629,22 @@ class _HomePageState extends State<HomePage> {
                 'Please log in to add syllabus notes.',
                 SyllabusFormPage(categories: _cats),
               );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder_special_outlined),
+            title: const Text('My Library'),
+            onTap: () {
+              Navigator.pop(context);
+              _open(const LibraryPage());
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.campaign_outlined),
+            title: const Text('Notices'),
+            onTap: () {
+              Navigator.pop(context);
+              _open(const NoticesPage());
             },
           ),
           if (loggedIn)

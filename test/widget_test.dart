@@ -181,4 +181,24 @@ void main() {
     expect(n.version, '1.2.1');
   });
 
+  test('saved solutions round-trip through the library JSON', () async {
+    SharedPreferences.setMockInitialValues({});
+    final lib2 = LibraryService();
+    lib2.applyJson({
+      'favorites': ['k1'],
+      'folders': [],
+      'solutions': [
+        {'id': 's1', 'q': 'What is 2+2?', 'a': '4', 'at': '2026-11-09T00:00:00Z'}
+      ],
+    });
+    expect(lib2.solutions.length, 1);
+    expect(lib2.solutions.first.q, 'What is 2+2?');
+    final back = LibraryService()..applyJson(lib2.toJson());
+    expect(back.solutions.single.a, '4');
+    lib2.saveSolution('Integrate x dx', 'x^{2}/2 + C');
+    expect(lib2.solutions.length, 2);
+    expect(lib2.solutions.first.q, 'Integrate x dx');
+    lib2.removeSolution(lib2.solutions.first.id);
+    expect(lib2.solutions.length, 1);
+  });
 }

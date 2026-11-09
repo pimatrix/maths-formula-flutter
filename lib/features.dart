@@ -2424,15 +2424,32 @@ class LibFolder {
   Map<String, dynamic> toJson() => {'id': id, 'name': name, 'items': items};
 }
 
+class SavedSolution {
+  final String id, q, a, at;
+  const SavedSolution(
+      {required this.id, required this.q, required this.a, required this.at});
+
+  factory SavedSolution.fromJson(Map<String, dynamic> j) => SavedSolution(
+        id: (j['id'] ?? '').toString(),
+        q: (j['q'] ?? '').toString(),
+        a: (j['a'] ?? '').toString(),
+        at: (j['at'] ?? '').toString(),
+      );
+
+  Map<String, dynamic> toJson() => {'id': id, 'q': q, 'a': a, 'at': at};
+}
+
 class LibraryService extends ChangeNotifier {
   List<String> favorites = [];
   List<LibFolder> folders = [];
+  List<SavedSolution> solutions = [];
   bool loaded = false;
   static const String _cacheKey = 'mm_library_v1';
 
   Map<String, dynamic> toJson() => {
         'favorites': favorites,
         'folders': folders.map((f) => f.toJson()).toList(),
+        'solutions': solutions.map((e) => e.toJson()).toList(),
       };
 
   void applyJson(Map<String, dynamic> j) {
@@ -2442,6 +2459,27 @@ class LibraryService extends ChangeNotifier {
         .whereType<Map>()
         .map((m) => LibFolder.fromJson(Map<String, dynamic>.from(m)))
         .toList();
+    solutions = ((j['solutions'] as List?) ?? [])
+        .whereType<Map>()
+        .map((m) => SavedSolution.fromJson(Map<String, dynamic>.from(m)))
+        .toList();
+  }
+
+  void saveSolution(String q, String a) {
+    solutions.insert(
+        0,
+        SavedSolution(
+            id: 's${DateTime.now().millisecondsSinceEpoch}',
+            q: q.trim(),
+            a: a.trim(),
+            at: DateTime.now().toUtc().toIso8601String()));
+    if (solutions.length > 50) solutions = solutions.sublist(0, 50);
+    _save();
+  }
+
+  void removeSolution(String id) {
+    solutions.removeWhere((e) => e.id == id);
+    _save();
   }
 
   Future<void> init() async {
@@ -2536,6 +2574,7 @@ class LibraryService extends ChangeNotifier {
   Future<void> onSignedOut() async {
     favorites = [];
     folders = [];
+    solutions = [];
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_cacheKey);
@@ -2663,6 +2702,15 @@ class _LibraryPageState extends State<LibraryPage> {
                       title: 'Favourites',
                       keys: library.favorites,
                       isFavorites: true))),
+            ),
+            ListTile(
+              leading:
+                  const Icon(Icons.bookmark_outlined, color: kPrimary),
+              title: const Text('Saved Solutions'),
+              subtitle: Text('${library.solutions.length} saved answers'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => const SavedSolutionsPage())),
             ),
             const Divider(),
             Padding(
@@ -3200,6 +3248,84 @@ class _AdminNoticesPageState extends State<AdminNoticesPage> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+
+class SavedSolutionsPage extends StatelessWidget {
+  const SavedSolutionsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: featureBar('Saved Solutions'),
+      body: ListenableBuilder(
+        listenable: library,
+        builder: (context, _) {
+          if (library.solutions.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Text(
+                  'No saved solutions yet — in the AI Tutor, tap Save under '
+                  'any answer to keep it here together with its question.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: subtleColor(context), fontSize: 14),
+                ),
+              ),
+            );
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.all(14),
+            itemCount: library.solutions.length,
+            itemBuilder: (context, i) {
+              final sol = library.solutions[i];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 10),
+                child: Padding(
+                  padding: const EdgeInsets.all(13),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(sol.q,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14)),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, size: 19),
+                            tooltip: 'Delete',
+                            visualDensity: VisualDensity.compact,
+                            onPressed: () => library.removeSolution(sol.id),
+                          ),
+                        ],
+                      ),
+                      if (sol.at.isNotEmpty)
+                        Text(fmtIst(sol.at),
+                            style: TextStyle(
+                                fontSize: 11.5,
+                                color: subtleColor(context))),
+                      const SizedBox(height: 8),
+                      StructuredText(
+                          text: displayText(sol.a),
+                          style: TextStyle(
+                              fontSize: 14,
+                              height: 1.55,
+                              color:
+                                  Theme.of(context).colorScheme.onSurface)),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }

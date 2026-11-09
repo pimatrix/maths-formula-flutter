@@ -15,6 +15,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'features.dart';
 import 'main.dart';
@@ -61,9 +62,24 @@ class Byok {
   }
 }
 
+Map<String, dynamic> _inlineImage(String dataUrl) {
+  final comma = dataUrl.indexOf(',');
+  final head = comma > 0 ? dataUrl.substring(0, comma) : '';
+  final mime = head.startsWith('data:')
+      ? head.substring(5).split(';').first
+      : 'image/jpeg';
+  return {
+    'inline_data': {
+      'mime_type': mime,
+      'data': comma > 0 ? dataUrl.substring(comma + 1) : dataUrl,
+    }
+  };
+}
+
 /// Asks Google Gemini DIRECTLY with the user's own key (same models,
 /// same instructions as the server path).
-Future<String> askWithOwnKey(String question, String? contextText) async {
+Future<String> askWithOwnKey(String question, String? contextText,
+    {String? imageDataUrl}) async {
   final userText = (contextText != null && contextText.isNotEmpty)
       ? 'The student is viewing this formula in the app:\n$contextText\n\nStudent\'s question: $question'
       : 'Student\'s question: $question';
@@ -76,7 +92,8 @@ Future<String> askWithOwnKey(String question, String? contextText) async {
     'contents': [
       {
         'parts': [
-          {'text': userText}
+          {'text': userText},
+          if (imageDataUrl != null) _inlineImage(imageDataUrl),
         ]
       }
     ],
@@ -124,7 +141,19 @@ Future<String> askWithOwnKey(String question, String? contextText) async {
 class _Msg {
   final bool mine;
   final String text;
-  const _Msg(this.mine, this.text);
+  final bool hasImage;
+  final bool noSave;
+  const _Msg(this.mine, this.text, {this.hasImage = false, this.noSave = false});
+
+  Map<String, dynamic> toJson() =>
+      {'m': mine, 't': text, if (hasImage) 'i': 1, if (noSave) 'n': 1};
+
+  factory _Msg.fromJson(Map<String, dynamic> j) => _Msg(
+        j['m'] == true,
+        (j['t'] ?? '').toString(),
+        hasImage: j['i'] == 1,
+        noSave: j['n'] == 1,
+      );
 }
 
 class AiTutorPage extends StatefulWidget {
@@ -140,13 +169,121 @@ class _AiTutorPageState extends State<AiTutorPage> {
   final _input = TextEditingController();
   final _scroll = ScrollController();
   final List<_Msg> _msgs = [];
+  String? _pendingImage;
   bool _busy = false;
+  static const String _chatKey = 'mm_ai_chat_v1';
+
+  Future<void> _loadHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_chatKey);
+      if (raw != null) {
+        final list = (jsonDecode(raw) as List)
+            .map((e) => _Msg.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+        if (mounted && list.isNotEmpty) {
+          setState(() => _msgs.addAll(list));
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _persist() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tail =
+          _msgs.length > 100 ? _msgs.sublist(_msgs.length - 100) : _msgs;
+      await prefs.setString(
+          _chatKey, jsonEncode(tail.map((m) => m.toJson()).toList()));
+    } catch (_) {}
+  }
+
+  Future<void> _clearChat() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Clear this chat?'),
+        content: const Text(
+            'The conversation saved on this device will be deleted. Your Saved Solutions stay saved.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Clear')),
+        ],
+      ),
+    );
+    if (ok == true) {
+      setState(() => _msgs.clear());
+      _persist();
+    }
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final x = await ImagePicker().pickImage(
+          source: ImageSource.gallery, imageQuality: 72, maxWidth: 1280);
+      if (x == null) return;
+      final bytes = await x.readAsBytes();
+      final mime = x.mimeType ?? 'image/jpeg';
+      setState(() => _pendingImage = 'data:$mime;base64,${base64Encode(bytes)}');
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not attach that photo.')));
+      }
+    }
+  }
+
+  void _saveSolution(int i) {
+    var q = '';
+    for (var j = i - 1; j >= 0; j--) {
+      if (_msgs[j].mine) {
+        q = _msgs[j].text;
+        break;
+      }
+    }
+    if (q.isEmpty) return;
+    library.saveSolution(q, _msgs[i].text);
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Saved — find it in My Library, Saved Solutions.')));
+  }
+
+  Widget _imagePreview() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 8, 4, 0),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.memory(
+                base64Decode(_pendingImage!.split(',').last),
+                width: 44,
+                height: 44,
+                fit: BoxFit.cover),
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text('Photo attached — type a question or just send.',
+                style: TextStyle(fontSize: 12.5)),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 19),
+            onPressed: () => setState(() => _pendingImage = null),
+          ),
+        ],
+      ),
+    );
+  }
   int? _remaining;
   int _limit = 10; // the admin can change this; refreshed from the server
 
   @override
   void initState() {
     super.initState();
+    _loadHistory();
     Byok.load().then((_) {
       if (mounted) setState(() {});
     });
@@ -342,17 +479,22 @@ class _AiTutorPageState extends State<AiTutorPage> {
 
   Future<void> _send(String raw) async {
     final q = raw.trim();
-    if (q.isEmpty || _busy) return;
+    final image = _pendingImage;
+    if ((q.isEmpty && image == null) || _busy) return;
     setState(() {
-      _msgs.add(_Msg(true, q));
+      _msgs.add(_Msg(true, q.isNotEmpty ? q : 'Please solve this photo',
+          hasImage: image != null));
       _busy = true;
+      _pendingImage = null;
     });
     _input.clear();
     _scrollDown();
     try {
       if (Byok.active) {
-        final answer =
-            await askWithOwnKey(q, _hasContext ? widget.contextText : null);
+        final answer = await askWithOwnKey(
+            q.isNotEmpty ? q : 'Solve the problem in this photo step by step.',
+            _hasContext ? widget.contextText : null,
+            imageDataUrl: image);
         if (!mounted) return;
         setState(() {
           _busy = false;
@@ -362,6 +504,7 @@ class _AiTutorPageState extends State<AiTutorPage> {
         final r = await auth.api('/api/ai', method: 'POST', body: {
           'question': q,
           if (_hasContext) 'context': widget.contextText,
+          if (image != null) 'image': image,
         });
         final d = jsonDecode(r.body) as Map<String, dynamic>;
         if (!mounted) return;
@@ -381,7 +524,8 @@ class _AiTutorPageState extends State<AiTutorPage> {
             _msgs.add(_Msg(
                 false,
                 (d['error'] ?? 'Something went wrong. Please try again.')
-                    .toString()));
+                    .toString(),
+                noSave: true));
           }
         });
       }
@@ -393,10 +537,12 @@ class _AiTutorPageState extends State<AiTutorPage> {
               false,
               e is String
                   ? e
-                  : 'Network error. Please check your connection and ask again.'));
+                  : 'Network error. Please check your connection and ask again.',
+              noSave: true));
         });
       }
     }
+    _persist();
     _scrollDown();
   }
 
@@ -409,6 +555,12 @@ class _AiTutorPageState extends State<AiTutorPage> {
         foregroundColor: Colors.white,
         title: const Text('AI Tutor', style: TextStyle(fontSize: 17)),
         actions: [
+          if (_msgs.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_sweep_outlined),
+              tooltip: 'Clear chat',
+              onPressed: _clearChat,
+            ),
           IconButton(
             icon: const Icon(Icons.key_outlined),
             tooltip: 'Your own Gemini key',
@@ -549,12 +701,47 @@ class _AiTutorPageState extends State<AiTutorPage> {
               color: m.mine ? kPrimary : const Color(0xFFF1EFFB),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: SelectableText(
-              m.mine ? m.text : displayText(m.text),
-              style: TextStyle(
-                  fontSize: 14.5,
-                  height: 1.5,
-                  color: m.mine ? Colors.white : Colors.black87),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (m.hasImage && m.mine)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 6),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.image_outlined,
+                            size: 14, color: Colors.white70),
+                        SizedBox(width: 5),
+                        Text('Photo',
+                            style: TextStyle(
+                                fontSize: 11.5, color: Colors.white70)),
+                      ],
+                    ),
+                  ),
+                SelectableText(
+                  m.mine ? m.text : displayText(m.text),
+                  style: TextStyle(
+                      fontSize: 14.5,
+                      height: 1.5,
+                      color: m.mine ? Colors.white : Colors.black87),
+                ),
+                if (!m.mine && !m.noSave)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () => _saveSolution(i),
+                      icon: const Icon(Icons.bookmark_add_outlined, size: 16),
+                      label:
+                          const Text('Save', style: TextStyle(fontSize: 12.5)),
+                      style: TextButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 6)),
+                    ),
+                  ),
+              ],
             ),
           ),
         );
@@ -577,10 +764,20 @@ class _AiTutorPageState extends State<AiTutorPage> {
                       ? const Color(0xFF383842)
                       : const Color(0xFFE3DEF7))),
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: TextField(
+            if (_pendingImage != null) _imagePreview(),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.add_photo_alternate_outlined),
+                  color: kPrimary,
+                  tooltip: 'Attach a photo of the question',
+                  onPressed: _busy ? null : _pickImage,
+                ),
+                Expanded(
+                  child: TextField(
                 controller: _input,
                 minLines: 1,
                 maxLines: 4,
@@ -604,10 +801,12 @@ class _AiTutorPageState extends State<AiTutorPage> {
                 ),
               ),
             ),
-            IconButton(
-              icon: const Icon(Icons.send),
-              color: kPrimary,
-              onPressed: _busy ? null : () => _send(_input.text),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  color: kPrimary,
+                  onPressed: _busy ? null : () => _send(_input.text),
+                ),
+              ],
             ),
           ],
         ),
