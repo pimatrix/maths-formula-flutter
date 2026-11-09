@@ -17,7 +17,7 @@ import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
 const String kSiteUrl = 'https://yashx.xyz/MathMitra';
-const String kAppVersion = '1.1.0';
+const String kAppVersion = '1.1.1';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -63,6 +63,26 @@ Color subtleColor(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark
         ? Colors.white60
         : Colors.black54;
+
+/// Title ink: deep navy on light surfaces, soft lavender-white on dark
+/// (the hardcoded navy/indigo text colours are unreadable on dark cards).
+Color inkColor(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFFE7E3FF)
+        : const Color(0xFF1E1B4B);
+
+/// Formula ink: dark indigo on light surfaces, light lavender on dark.
+Color formulaInk(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFFD9D2FF)
+        : const Color(0xFF26215C);
+
+/// Brand accent for headings and markers: kPrimary on light surfaces,
+/// a brighter indigo on dark (kPrimary itself is too dark to read there).
+Color brandInk(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFFB7AEFF)
+        : kPrimary;
 
 /// One-time entrance animation (fade + rise) for list cards — each entry
 /// animates only the first time it appears in a session.
@@ -588,7 +608,7 @@ class StructuredText extends StatelessWidget {
                         child: Text(
                           l.marker == '•' ? '•' : '${l.marker}.',
                           style: style.copyWith(
-                              fontWeight: FontWeight.w800, color: kPrimary),
+                              fontWeight: FontWeight.w800, color: brandInk(context)),
                         ),
                       ),
                       Expanded(child: Text(l.text, style: style)),
@@ -1179,8 +1199,8 @@ class _HomePageState extends State<HomePage> {
                               focusNode: _searchFocus,
                               decoration: InputDecoration(
                                 hintText: 'Search',
-                                hintStyle: const TextStyle(
-                                    color: Colors.black38, fontSize: 14),
+                                hintStyle: TextStyle(
+                                    color: subtleColor(context), fontSize: 14),
                                 prefixIcon:
                                     const Icon(Icons.search, color: kPrimary),
                                 filled: true,
@@ -1452,17 +1472,16 @@ class _HomePageState extends State<HomePage> {
                                         style: displayStyle(
                                             size: 16.5,
                                             weight: FontWeight.w700,
-                                            color:
-                                                const Color(0xFF1E1B4B))),
+                                            color: inkColor(context))),
                                     const SizedBox(height: 2),
                                     Text(
                                       [
                                         if (catTitle != null) catTitle,
                                         if (e.section.isNotEmpty) e.section,
                                       ].join(' · '),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontSize: 11.5,
-                                          color: Colors.black45),
+                                          color: subtleColor(context)),
                                     ),
                                   ],
                                 ),
@@ -1485,14 +1504,14 @@ class _HomePageState extends State<HomePage> {
                                 ? TextOverflow.visible
                                 : TextOverflow.ellipsis,
                             style: fullText
-                                ? const TextStyle(
+                                ? TextStyle(
                                     fontSize: 14,
                                     height: 1.5,
-                                    color: Colors.black87)
+                                    color: Theme.of(context).colorScheme.onSurface)
                                 : displayStyle(
                                     size: 15.5,
                                     weight: FontWeight.w500,
-                                    color: const Color(0xFF26215C),
+                                    color: formulaInk(context),
                                     height: 1.45),
                           ),
                           const SizedBox(height: 4),
@@ -1502,9 +1521,9 @@ class _HomePageState extends State<HomePage> {
                                 Expanded(
                                   child: Text('by ${e.authorName}',
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontSize: 11.5,
-                                          color: Colors.black38)),
+                                          color: subtleColor(context))),
                                 )
                               else
                                 const Spacer(),
@@ -1630,7 +1649,7 @@ class DetailPage extends StatelessWidget {
           Text(
             name,
             style: displayStyle(
-                size: 23, weight: FontWeight.w700, color: const Color(0xFF1E1B4B)),
+                size: 23, weight: FontWeight.w700, color: inkColor(context)),
           ),
           const SizedBox(height: 4),
           Row(
@@ -1642,10 +1661,12 @@ class DetailPage extends StatelessWidget {
                   entry.section.isEmpty
                       ? categoryTitle
                       : '$categoryTitle · ${entry.section}',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF7C6AA8)),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFFBBAEF2)
+                          : const Color(0xFF7C6AA8)),
                 ),
               ),
             ],
@@ -1664,12 +1685,17 @@ class DetailPage extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 22),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFEEF2FF), Color(0xFFE7E0FC)],
+                gradient: LinearGradient(
+                  colors: Theme.of(context).brightness == Brightness.dark
+                      ? const [Color(0xFF2A2470), Color(0xFF1B1748)]
+                      : const [Color(0xFFEEF2FF), Color(0xFFE7E0FC)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                border: Border.all(color: const Color(0xFFCFC4F2)),
+                border: Border.all(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF4A3FA0)
+                        : const Color(0xFFCFC4F2)),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: const [
                   BoxShadow(
@@ -1682,7 +1708,10 @@ class DetailPage extends StatelessWidget {
                   ? StructuredText(
                       text: stripTitlePrefix(displayText(entry.body),
                           [displayText(entry.name), name]),
-                      style: const TextStyle(fontSize: 15.5, height: 1.55),
+                      style: TextStyle(
+                        fontSize: 15.5,
+                        height: 1.55,
+                        color: Theme.of(context).colorScheme.onSurface),
                     )
                   : Text(
                       stripTitlePrefix(displayText(entry.body),
@@ -1691,7 +1720,10 @@ class DetailPage extends StatelessWidget {
                           ? TextAlign.left
                           : TextAlign.center,
                       style: entry.kind == 'table'
-                          ? const TextStyle(fontSize: 15.5, height: 1.55)
+                          ? TextStyle(
+                        fontSize: 15.5,
+                        height: 1.55,
+                        color: Theme.of(context).colorScheme.onSurface)
                           : displayStyle(
                               size: 21,
                               weight: FontWeight.w600,
@@ -1706,7 +1738,7 @@ class DetailPage extends StatelessWidget {
               'Added by ${entry.authorName}'
               '${entry.authorEmail.isNotEmpty ? ' (${entry.authorEmail})' : ''}'
               '${entry.createdAt.isNotEmpty ? ' · ${fmtIst(entry.createdAt)}' : ''}',
-              style: const TextStyle(fontSize: 12, color: Colors.black45),
+              style: TextStyle(fontSize: 12, color: subtleColor(context)),
             ),
           ],
           const SizedBox(height: 14),
@@ -1748,30 +1780,35 @@ class DetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           if (about.isNotEmpty)
-            _block('What is this formula for?', displayText(about)),
-          if (symbols.isNotEmpty) _symbolsBlock(symbols),
+            _block(context, 'What is this formula for?', displayText(about)),
+          if (symbols.isNotEmpty) _symbolsBlock(context, symbols),
           if (example.isNotEmpty)
-            _block('Example — how to use it', displayText(example),
+            _block(context, 'Example — how to use it', displayText(example),
                 green: true),
           if (!hasDetail)
-            const Text(
+            Text(
               'Details for this one (meaning, symbols and a solved example) are being added — check back soon.',
-              style: TextStyle(color: Colors.black45, fontSize: 13.5),
+              style: TextStyle(color: subtleColor(context), fontSize: 13.5),
             ),
         ],
       ),
     );
   }
 
-  Widget _block(String title, String text, {bool green = false}) {
+  Widget _block(BuildContext context, String title, String text, {bool green = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 13),
       padding:
           green ? const EdgeInsets.all(13) : EdgeInsets.zero,
       decoration: green
           ? BoxDecoration(
-              color: const Color(0xFFF4FBF4),
-              border: Border.all(color: const Color(0xFFCFE8CF)),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF12271A)
+                  : const Color(0xFFF4FBF4),
+              border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF2E5339)
+                      : const Color(0xFFCFE8CF)),
               borderRadius: BorderRadius.circular(10))
           : null,
       child: Column(
@@ -1781,7 +1818,11 @@ class DetailPage extends StatelessWidget {
               style: displayStyle(
                   size: 14.5,
                   weight: FontWeight.w700,
-                  color: green ? const Color(0xFF22702C) : kPrimary)),
+                  color: green
+                      ? (Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF86D997)
+                          : const Color(0xFF22702C))
+                      : brandInk(context))),
           const SizedBox(height: 5),
           StructuredText(
               text: text,
@@ -1791,7 +1832,7 @@ class DetailPage extends StatelessWidget {
     );
   }
 
-  Widget _symbolsBlock(String symbols) {
+  Widget _symbolsBlock(BuildContext context, String symbols) {
     final parts = <String>[];
     for (final line in displayText(symbols).split('\n')) {
       var segs = line
@@ -1824,31 +1865,31 @@ class DetailPage extends StatelessWidget {
         children: [
           Text('What the symbols mean',
               style: displayStyle(
-                  size: 14.5, weight: FontWeight.w700, color: kPrimary)),
+                  size: 14.5, weight: FontWeight.w700, color: brandInk(context))),
           const SizedBox(height: 5),
           for (final p in parts)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2.5),
-              child: _symbolRow(p),
+              child: _symbolRow(context, p),
             ),
         ],
       ),
     );
   }
 
-  Widget _symbolRow(String p) {
+  Widget _symbolRow(BuildContext context, String p) {
     const style = TextStyle(fontSize: 14.5, height: 1.5);
     var cut = p.indexOf(' = ');
     if (cut < 0) cut = p.indexOf(' ≈ ');
     if (cut <= 0 || cut > 24) return Text(p, style: style);
     return RichText(
       text: TextSpan(
-        style: style.copyWith(color: Colors.black87),
+        style: style.copyWith(color: Theme.of(context).colorScheme.onSurface),
         children: [
           TextSpan(
               text: p.substring(0, cut),
               style: displayStyle(
-                  size: 14.5, weight: FontWeight.w700, color: kPrimary)),
+                  size: 14.5, weight: FontWeight.w700, color: brandInk(context))),
           TextSpan(text: p.substring(cut)),
         ],
       ),
@@ -1938,7 +1979,9 @@ class _BrowsePageState extends State<BrowsePage> {
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 20),
               children: [
                 Card(
-                  color: const Color(0xFFEFEBFB),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Theme.of(context).colorScheme.surfaceContainerHighest
+                      : const Color(0xFFEFEBFB),
                   elevation: 0,
                   child: ListTile(
                     leading: const Icon(Icons.library_books_outlined,
@@ -2006,11 +2049,11 @@ class _BrowsePageState extends State<BrowsePage> {
           for (final s in sections.entries)
             ListTile(
               dense: true,
-              leading: const Icon(Icons.topic_outlined,
-                  size: 19, color: Colors.black45),
+              leading: Icon(Icons.topic_outlined,
+                  size: 19, color: subtleColor(context)),
               title: Text(s.key),
               trailing: Text('${s.value}',
-                  style: const TextStyle(color: Colors.black45, fontSize: 12)),
+                  style: TextStyle(color: subtleColor(context), fontSize: 12)),
               onTap: () => _go(c.slug, s.key),
             ),
         ],
@@ -2117,11 +2160,11 @@ class _AddHubPageState extends State<AddHubPage> {
             ),
           ),
           if (!auth.isLoggedIn)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
               child: Text(
                 'You will be asked to log in first — adding is free for every student.',
-                style: TextStyle(fontSize: 12.5, color: Colors.black45),
+                style: TextStyle(fontSize: 12.5, color: subtleColor(context)),
               ),
             ),
         ],

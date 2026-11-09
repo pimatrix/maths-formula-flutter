@@ -220,8 +220,8 @@ class _AiTutorPageState extends State<AiTutorPage> {
       itemCount: _msgs.length + (_busy ? 1 : 0),
       itemBuilder: (context, i) {
         if (i >= _msgs.length) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(children: [
               SizedBox(
                   height: 16,
@@ -229,7 +229,7 @@ class _AiTutorPageState extends State<AiTutorPage> {
                   child: CircularProgressIndicator(strokeWidth: 2)),
               SizedBox(width: 10),
               Text('Thinking…',
-                  style: TextStyle(color: Colors.black45, fontSize: 13)),
+                  style: TextStyle(color: subtleColor(context), fontSize: 13)),
             ]),
           );
         }

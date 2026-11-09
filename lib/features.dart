@@ -362,8 +362,13 @@ class _AuthPageState extends State<AuthPage> {
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(bottom: 14),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF7E6),
-                border: Border.all(color: const Color(0xFFF0D9A8)),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF2E2308)
+                    : const Color(0xFFFFF7E6),
+                border: Border.all(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF6B5518)
+                        : const Color(0xFFF0D9A8)),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(widget.note,
@@ -483,7 +488,7 @@ class _AuthPageState extends State<AuthPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            'The same account works on the website too — your data is shared everywhere.',
+            'One account for the app and the website — sign in anywhere with the same email.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 12.5, color: subtleColor(context)),
           ),
