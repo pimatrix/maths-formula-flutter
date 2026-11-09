@@ -1336,6 +1336,14 @@ class _AdminPageState extends State<AdminPage> {
   List<dynamic> _users = [];
   bool _loading = true;
   String _error = '';
+  final _limitCtrl = TextEditingController();
+  bool _limitBusy = false;
+
+  @override
+  void dispose() {
+    _limitCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -1361,10 +1369,87 @@ class _AdminPageState extends State<AdminPage> {
                 as List<dynamic>? ??
             [];
       }
+      final r3 = await auth.api('/api/admin/ai-limit');
+      if (r3.statusCode == 200) {
+        final d3 = jsonDecode(r3.body) as Map<String, dynamic>;
+        if (d3['limit'] is num) {
+          _limitCtrl.text = (d3['limit'] as num).toInt().toString();
+        }
+      }
     } catch (_) {
       setState(() => _error = 'Network error.');
     }
     if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _saveLimit() async {
+    final n = int.tryParse(_limitCtrl.text.trim());
+    if (n == null || n < 1 || n > 1000) {
+      showMsg(context, 'Enter a whole number between 1 and 1000.');
+      return;
+    }
+    setState(() => _limitBusy = true);
+    try {
+      final r = await auth.api('/api/admin/ai-limit',
+          method: 'POST', body: {'limit': n});
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        showMsg(context,
+            'AI Tutor limit set to $n questions per user per day. It applies to everyone within about a minute.');
+      } else {
+        showMsg(context, apiError(r));
+      }
+    } catch (_) {
+      if (mounted) showMsg(context, 'Network error.');
+    }
+    if (mounted) setState(() => _limitBusy = false);
+  }
+
+  Widget _aiLimitCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.auto_awesome_outlined, size: 19, color: kPrimary),
+                SizedBox(width: 8),
+                Text('AI Tutor — daily free limit',
+                    style:
+                        TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'How many questions a user can ask the AI Tutor each day on the app\'s own key. Users with their own Gemini key are not limited. Changes apply within about a minute.',
+              style: TextStyle(
+                  fontSize: 12.5, height: 1.45, color: subtleColor(context)),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                SizedBox(
+                  width: 120,
+                  child: TextField(
+                    controller: _limitCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: fieldDeco('Per day'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                FilledButton(
+                  style: FilledButton.styleFrom(backgroundColor: kPrimary),
+                  onPressed: _limitBusy ? null : _saveLimit,
+                  child: Text(_limitBusy ? 'Saving…' : 'Save limit'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _setRole(Map<String, dynamic> u, String role) async {
@@ -1579,6 +1664,8 @@ class _AdminPageState extends State<AdminPage> {
                 _stat('Categories', t['categories']),
               ],
             ),
+            const SizedBox(height: 14),
+            _aiLimitCard(),
             const SizedBox(height: 18),
             Row(
               children: [

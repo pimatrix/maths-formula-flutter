@@ -142,6 +142,7 @@ class _AiTutorPageState extends State<AiTutorPage> {
   final List<_Msg> _msgs = [];
   bool _busy = false;
   int? _remaining;
+  int _limit = 10; // the admin can change this; refreshed from the server
 
   @override
   void initState() {
@@ -159,7 +160,10 @@ class _AiTutorPageState extends State<AiTutorPage> {
       if (r.statusCode != 200) return;
       final d = jsonDecode(r.body) as Map<String, dynamic>;
       if (mounted && d['remaining'] is num) {
-        setState(() => _remaining = (d['remaining'] as num).toInt());
+        setState(() {
+          _remaining = (d['remaining'] as num).toInt();
+          if (d['limit'] is num) _limit = (d['limit'] as num).toInt();
+        });
       }
     } catch (_) {}
   }
@@ -288,8 +292,8 @@ class _AiTutorPageState extends State<AiTutorPage> {
           Expanded(
             child: Text(
               left == 0
-                  ? 'Today\'s 10 free questions are over — they reset at midnight.'
-                  : 'Free questions left today: $left of 10',
+                  ? 'Today\'s $_limit free questions are over — they reset at midnight.'
+                  : 'Free questions left today: $left of $_limit',
               style: const TextStyle(fontSize: 12.5),
             ),
           ),
@@ -368,6 +372,7 @@ class _AiTutorPageState extends State<AiTutorPage> {
             final u = d['usage'];
             if (u is Map && u['remaining'] is num) {
               _remaining = (u['remaining'] as num).toInt();
+              if (u['limit'] is num) _limit = (u['limit'] as num).toInt();
             }
           } else {
             if (r.statusCode == 429 && d['limit_reached'] == true) {
