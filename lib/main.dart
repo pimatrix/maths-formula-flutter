@@ -372,6 +372,11 @@ String cleanBody(String html) {
       (m) => _script(m[1]!, _subMap, '_'));
   s = s.replaceAll(RegExp(r'<br\s*/?>'), '\n');
   s = s.replaceAll('</p>', '\n');
+  // HTML tables: keep the grid readable as plain text (list previews,
+  // PDF, share) — one row per line, cells separated by " · ". The
+  // detail page renders a real grid via parseTable() instead.
+  s = s.replaceAll(RegExp(r'</tr\s*>\n?', caseSensitive: false), '\n');
+  s = s.replaceAll(RegExp(r'</t[dh]\s*>', caseSensitive: false), ' · ');
   s = s.replaceAll(RegExp(r'<[^>]+>'), '');
   // Wide &nbsp; runs are segment separators in a few packed bodies
   // ("Sum of roots: ...   Product of roots: ...") — turn them into
@@ -386,7 +391,87 @@ String cleanBody(String html) {
       .replaceAll('&minus;', '−');
   s = s.replaceAll(RegExp(r'[ \t]+'), ' ');
   s = s.replaceAll(RegExp(r'\n\s*\n\s*\n+'), '\n\n');
+  // Drop the dangling cell separator at the end of table rows.
+  s = s.split('\n').map((l) => l.replaceAll(RegExp(r'[\s·]+$'), '')).join('\n');
   return s.trim();
+}
+
+/// Parses an HTML <table> body into rows of cleaned cell text.
+/// Returns an empty list when the body holds no usable table.
+List<List<String>> parseTable(String html) {
+  final rows = <List<String>>[];
+  for (final tr in RegExp(r'<tr[^>]*>(.*?)</tr>',
+          dotAll: true, caseSensitive: false)
+      .allMatches(html)) {
+    final cells = <String>[];
+    for (final td in RegExp(r'<t[hd][^>]*>(.*?)</t[hd]>',
+            dotAll: true, caseSensitive: false)
+        .allMatches(tr[1]!)) {
+      cells.add(cleanBody(td[1]!));
+    }
+    if (cells.isNotEmpty) rows.add(cells);
+  }
+  return rows;
+}
+
+/// A real grid for table-kind entries (e.g. the trigonometry
+/// standard-values table), drawn inside the detail page's card.
+/// Scrolls sideways on narrow screens instead of squeezing cells.
+class FormulaTable extends StatelessWidget {
+  final List<List<String>> rows;
+  const FormulaTable({super.key, required this.rows});
+
+  @override
+  Widget build(BuildContext context) {
+    final cols =
+        rows.fold<int>(0, (m, r) => r.length > m ? r.length : m);
+    final cs = Theme.of(context).colorScheme;
+    return LayoutBuilder(builder: (context, box) {
+      final wanted = cols * 62.0;
+      final width = wanted > box.maxWidth ? wanted : box.maxWidth;
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(
+          width: width,
+          child: Table(
+            columnWidths: {
+              for (var i = 0; i < cols; i++) i: const FlexColumnWidth()
+            },
+            border: TableBorder.all(
+                color: Theme.of(context).dividerColor, width: 0.7),
+            children: [
+              for (var r = 0; r < rows.length; r++)
+                TableRow(
+                  decoration: r == 0
+                      ? BoxDecoration(
+                          color: kPrimary.withValues(alpha: 0.10))
+                      : null,
+                  children: [
+                    for (var c = 0; c < cols; c++)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 6),
+                        child: Text(
+                          c < rows[r].length ? rows[r][c] : '',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            height: 1.3,
+                            fontWeight: (r == 0 || c == 0)
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
 }
 
 const Map<String, String> _cmdMap = {
@@ -1845,7 +1930,10 @@ class DetailPage extends StatelessWidget {
                       offset: Offset(0, 5)),
                 ],
               ),
-              child: entry.kind == 'theory'
+              child: entry.kind == 'table' &&
+                      parseTable(entry.body).length > 1
+                  ? FormulaTable(rows: parseTable(entry.body))
+                  : entry.kind == 'theory'
                   ? StructuredText(
                       text: stripTitlePrefix(displayText(entry.body),
                           [displayText(entry.name), name]),

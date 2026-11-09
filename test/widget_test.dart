@@ -113,4 +113,25 @@ void main() {
     expect(skeleton('(a+b)^2'), '(a+b)2');
     expect(skeleton('(a + b)² = a² + 2ab'), contains('(a+b)2'));
   });
+
+  test('cleanBody keeps an HTML table readable as rows', () {
+    const html = '<table class="vals">\n'
+        '<tr><th>θ</th><th>0° (0)</th><th>30° (π/6)</th></tr>\n'
+        '<tr><th>sin θ</th><td>0</td><td>1/2</td></tr>\n'
+        '</table>';
+    final out = cleanBody(html);
+    expect(out.split('\n').length, 2);
+    expect(out.split('\n')[0], 'θ · 0° (0) · 30° (π/6)');
+    expect(out.split('\n')[1], 'sin θ · 0 · 1/2');
+  });
+
+  test('parseTable extracts rows and cells', () {
+    const html = '<table><tr><th>θ</th><th>0° (0)</th></tr>'
+        '<tr><th>sin θ</th><td>0</td></tr></table>';
+    final rows = parseTable(html);
+    expect(rows.length, 2);
+    expect(rows[0], ['θ', '0° (0)']);
+    expect(rows[1], ['sin θ', '0']);
+    expect(parseTable('plain text, no table'), isEmpty);
+  });
 }
