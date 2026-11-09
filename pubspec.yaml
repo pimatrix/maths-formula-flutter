@@ -33,19 +33,19 @@ flutter:
   fonts:
     - family: Inter
       fonts:
-        - asset: assets/fonts/Inter-400.woff2
+        - asset: assets/fonts/Inter-400.ttf
           weight: 400
-        - asset: assets/fonts/Inter-500.woff2
+        - asset: assets/fonts/Inter-500.ttf
           weight: 500
-        - asset: assets/fonts/Inter-600.woff2
+        - asset: assets/fonts/Inter-600.ttf
           weight: 600
-        - asset: assets/fonts/Inter-700.woff2
+        - asset: assets/fonts/Inter-700.ttf
           weight: 700
     - family: Space Grotesk
       fonts:
-        - asset: assets/fonts/SpaceGrotesk-500.woff2
+        - asset: assets/fonts/SpaceGrotesk-500.ttf
           weight: 500
-        - asset: assets/fonts/SpaceGrotesk-600.woff2
+        - asset: assets/fonts/SpaceGrotesk-600.ttf
           weight: 600
-        - asset: assets/fonts/SpaceGrotesk-700.woff2
+        - asset: assets/fonts/SpaceGrotesk-700.ttf
           weight: 700
