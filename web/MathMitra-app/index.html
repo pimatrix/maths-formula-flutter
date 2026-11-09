@@ -28,8 +28,9 @@
   .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:'Space Grotesk';font-weight:700;font-size:19px}
   .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--indigo),var(--violet));display:flex;align-items:center;justify-content:center;color:#fff;font-family:Georgia,serif;font-weight:bold;font-size:19px;box-shadow:0 4px 14px rgba(67,56,202,.35)}
   nav.links{margin-left:auto;display:flex;gap:22px;align-items:center}
-  nav.links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500}
-  nav.links a:hover{color:var(--indigo)}
+  nav.links a:not(.btn){color:var(--muted);text-decoration:none;font-size:14px;font-weight:500}
+  nav.links a:not(.btn):hover{color:var(--indigo)}
+  nav.links a.btn-primary{color:#fff;text-decoration:none}
   .btn{display:inline-flex;align-items:center;gap:9px;border-radius:12px;padding:12px 20px;font-weight:600;font-size:15px;text-decoration:none;border:1px solid transparent;transition:transform .15s ease, box-shadow .15s ease;cursor:pointer}
   .btn:hover{transform:translateY(-1px)}
   .btn-primary{background:linear-gradient(135deg,var(--indigo),var(--violet));color:#fff;box-shadow:0 8px 22px rgba(67,56,202,.35)}
