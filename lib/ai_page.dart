@@ -143,11 +143,11 @@ class _AiTutorPageState extends State<AiTutorPage> {
             const Text('AI Tutor',
                 style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Ask any maths question and get a step-by-step solution. '
               'Log in (free) to use the AI Tutor — this keeps the AI fair for everyone.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54, height: 1.5),
+              style: TextStyle(color: subtleColor(context), height: 1.5),
             ),
             const SizedBox(height: 18),
             FilledButton(
@@ -193,8 +193,8 @@ class _AiTutorPageState extends State<AiTutorPage> {
             _hasContext
                 ? 'Ask anything about this formula — its meaning, a solved example, or a question you want to try with it.'
                 : 'Type any maths question — an equation to solve, a formula to understand, or a doubt from class — and get a step-by-step answer.',
-            style: const TextStyle(
-                fontSize: 14, color: Colors.black54, height: 1.55),
+            style: TextStyle(
+                fontSize: 14, color: subtleColor(context), height: 1.55),
           ),
           const SizedBox(height: 14),
           const Text('Try one of these:',

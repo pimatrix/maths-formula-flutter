@@ -192,7 +192,7 @@ Future<void> exportAllFormulasPdf(
     footer: (ctx) => pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
-        pw.Text('MathMitra · yashx.xyz/math-formula-sheet-m1',
+        pw.Text('MathMitra · yashx.xyz/MathMitra',
             style: pw.TextStyle(font: inter, fontSize: 8, color: grey)),
         pw.Text('Page ${ctx.pageNumber} of ${ctx.pagesCount}',
             style: pw.TextStyle(font: inter, fontSize: 8, color: grey)),

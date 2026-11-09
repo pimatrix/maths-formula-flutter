@@ -12,9 +12,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'ai_page.dart';
 import 'contact_page.dart';
 import 'features.dart';
+import 'tracker.dart';
 import 'pdf_export.dart' deferred as pdf_export;
 
-const String kApiUrl = 'https://yashx.xyz/math-formula-sheet-m1/api/formulas';
+const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
+const String kSiteUrl = 'https://yashx.xyz/MathMitra';
+const String kAppVersion = '1.1.0';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -53,6 +56,13 @@ TextStyle displayStyle({
     height: height,
   );
 }
+
+/// Secondary text colour that adapts to the theme (the hardcoded
+/// Colors.black54 subtitles used across the app vanish on dark surfaces).
+Color subtleColor(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? Colors.white60
+        : Colors.black54;
 
 /// One-time entrance animation (fade + rise) for list cards — each entry
 /// animates only the first time it appears in a session.
@@ -704,7 +714,8 @@ Future<void> shareEntry(
   final text = '${displayName(e, details)}\n'
       '${displayText(e.body)}\n\n'
       '— MathMitra\n'
-      'https://yashx.xyz/math-formula-sheet-m1';
+      '$kSiteUrl';
+  Tracker.instance.share(displayName(e, details));
   try {
     await Share.share(text, subject: displayName(e, details));
   } catch (_) {
@@ -790,33 +801,91 @@ class DataPing extends ChangeNotifier {
 
 // ---------------------------------------------------------------- app
 
-class FormulaApp extends StatelessWidget {
+/// Light / dark theme preference, persisted on the device.
+class ThemeController extends ChangeNotifier {
+  ThemeMode mode = ThemeMode.system;
+  bool _loaded = false;
+
+  Future<void> load() async {
+    if (_loaded) return;
+    _loaded = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final v = prefs.getString('mm_theme_mode');
+      mode = v == 'dark'
+          ? ThemeMode.dark
+          : v == 'light'
+              ? ThemeMode.light
+              : ThemeMode.system;
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  Future<void> set(ThemeMode m) async {
+    mode = m;
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('mm_theme_mode',
+          m == ThemeMode.dark ? 'dark' : m == ThemeMode.light ? 'light' : 'system');
+    } catch (_) {}
+  }
+}
+
+final ThemeController themeCtl = ThemeController();
+
+NavigationBarThemeData _navTheme(Color bg, Color indicator, Color selected, Color unselected) {
+  return NavigationBarThemeData(
+    backgroundColor: bg,
+    indicatorColor: indicator,
+    labelTextStyle: WidgetStateProperty.all(const TextStyle(
+        fontFamily: kDisplayFont, fontSize: 12, fontWeight: FontWeight.w600)),
+    iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+        color: states.contains(WidgetState.selected) ? selected : unselected)),
+  );
+}
+
+class FormulaApp extends StatefulWidget {
   const FormulaApp({super.key});
 
   @override
+  State<FormulaApp> createState() => _FormulaAppState();
+}
+
+class _FormulaAppState extends State<FormulaApp> {
+  @override
+  void initState() {
+    super.initState();
+    themeCtl.load();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MathMitra',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: kPrimary),
-        useMaterial3: true,
-        fontFamily: 'Inter',
-        scaffoldBackgroundColor: const Color(0xFFF6F5FB),
-        navigationBarTheme: NavigationBarThemeData(
-          backgroundColor: Colors.white,
-          indicatorColor: const Color(0xFFE3DEFA),
-          labelTextStyle: WidgetStateProperty.all(const TextStyle(
-              fontFamily: kDisplayFont,
-              fontSize: 12,
-              fontWeight: FontWeight.w600)),
-          iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
-              color: states.contains(WidgetState.selected)
-                  ? kPrimary
-                  : Colors.black54)),
+    return ListenableBuilder(
+      listenable: themeCtl,
+      builder: (context, _) => MaterialApp(
+        title: 'MathMitra',
+        debugShowCheckedModeBanner: false,
+        themeMode: themeCtl.mode,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: kPrimary),
+          useMaterial3: true,
+          fontFamily: 'Inter',
+          scaffoldBackgroundColor: const Color(0xFFF6F5FB),
+          navigationBarTheme: _navTheme(Colors.white,
+              const Color(0xFFE3DEFA), kPrimary, Colors.black54),
         ),
+        darkTheme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+              seedColor: kPrimary, brightness: Brightness.dark),
+          useMaterial3: true,
+          fontFamily: 'Inter',
+          scaffoldBackgroundColor: const Color(0xFF0F0F16),
+          navigationBarTheme: _navTheme(const Color(0xFF17171F),
+              const Color(0xFF3730A3), const Color(0xFFA5B4FC), Colors.white54),
+        ),
+        home: const MainShell(),
       ),
-      home: const MainShell(),
     );
   }
 }
@@ -898,6 +967,7 @@ class _HomePageState extends State<HomePage> {
     _load();
     auth.addListener(_onAuth);
     auth.load();
+    Tracker.instance.start();
     BrowseSel.instance.addListener(_onBrowse);
     DataPing.instance.addListener(_refreshData);
   }
@@ -1154,8 +1224,8 @@ class _HomePageState extends State<HomePage> {
                           searching
                               ? 'Showing ${visible.length} of ${data.entries.length} entries for "${_query.trim()}"'
                               : 'Showing ${visible.length} of ${data.entries.length} entries',
-                          style: const TextStyle(
-                              fontSize: 13, color: Colors.black54),
+                          style: TextStyle(
+                              fontSize: 13, color: subtleColor(context)),
                         ),
                       ),
                       if (_sectionFilter.isNotEmpty)
@@ -1331,18 +1401,21 @@ class _HomePageState extends State<HomePage> {
         .firstOrNull;
     final isTheory = e.kind == 'theory';
     final fullText = isTheory || e.kind == 'table';
-    void openDetail() => Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => DetailPage(
-              entry: e,
-              categoryTitle: catTitle ?? e.category,
-              details: _details),
-        ));
+    void openDetail() {
+      Tracker.instance.formulaView(e.name, e.category);
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => DetailPage(
+            entry: e,
+            categoryTitle: catTitle ?? e.category,
+            details: _details),
+      ));
+    }
     return Entrance(
       id: e.id,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [
             BoxShadow(
@@ -2011,9 +2084,9 @@ class _AddHubPageState extends State<AddHubPage> {
       body: ListView(
         padding: const EdgeInsets.all(14),
         children: [
-          const Text(
+          Text(
             'Add formulas, classes and syllabus notes — your name shows as the author.',
-            style: TextStyle(fontSize: 13.5, color: Colors.black54, height: 1.5),
+            style: TextStyle(fontSize: 13.5, color: subtleColor(context), height: 1.5),
           ),
           const SizedBox(height: 14),
           _tile(
@@ -2154,6 +2227,41 @@ class _MorePageState extends State<MorePage> {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
   }
 
+  Future<void> _chooseTheme() async {
+    final picked = await showDialog<ThemeMode>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Appearance'),
+        children: [
+          for (final (mode, label) in [
+            (ThemeMode.light, 'Light'),
+            (ThemeMode.dark, 'Dark'),
+            (ThemeMode.system, 'System default'),
+          ])
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, mode),
+              child: Row(
+                children: [
+                  Icon(
+                      themeCtl.mode == mode
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      size: 20,
+                      color: kPrimary),
+                  const SizedBox(width: 10),
+                  Text(label),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+    if (picked != null) {
+      await themeCtl.set(picked);
+      if (mounted) setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loggedIn = auth.isLoggedIn;
@@ -2256,6 +2364,76 @@ class _MorePageState extends State<MorePage> {
             subtitle: const Text('Units, Basics and classes — section by section'),
             onTap: widget.onGoHome,
           ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.brightness_6_outlined),
+            title: const Text('Appearance'),
+            subtitle: Text(themeCtl.mode == ThemeMode.dark
+                ? 'Dark'
+                : themeCtl.mode == ThemeMode.light
+                    ? 'Light'
+                    : 'System default'),
+            onTap: _chooseTheme,
+          ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 10, 16, 2),
+            child: Text('About',
+                style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+          ),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text('App version'),
+            subtitle: const Text('Version $kAppVersion'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.person_outline),
+            title: const Text('Creator & Owner'),
+            subtitle: const Text('Yash Sharma'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.language_outlined),
+            title: const Text('Website'),
+            subtitle: const Text('www.yashx.xyz'),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => openLink('https://yashx.xyz'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.call_outlined),
+            title: const Text('Contact'),
+            subtitle: const Text('9201980161'),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => openLink('tel:9201980161'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.description_outlined),
+            title: const Text('Terms & Conditions'),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => openLink('https://yashx.xyz/terms'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: const Text('Privacy Policy'),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => openLink('https://yashx.xyz/privacy'),
+          ),
+          const SizedBox(height: 18),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Text(
+              'MathMitra uses analytics to understand how the app is used and to improve it. Everything that is collected is listed in the Privacy Policy, and you can opt out any time in My Profile.',
+              style: TextStyle(
+                  fontSize: 12, color: subtleColor(context), height: 1.5),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Center(
+            child: Text(
+              'Version $kAppVersion · Created by Yash Sharma',
+              style: TextStyle(fontSize: 12, color: subtleColor(context)),
+            ),
+          ),
+          const SizedBox(height: 26),
         ],
       ),
     );

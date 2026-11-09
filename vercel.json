@@ -1,53 +1,32 @@
 {
   "rewrites": [
-    {
-      "destination": "/index.html",
-      "source": "/math-formula-sheet-m1"
-    },
-    {
-      "destination": "/index.html",
-      "source": "/math-formula-sheet-m1/"
-    },
-    {
-      "destination": "/:path*",
-      "source": "/math-formula-sheet-m1/:path*"
-    }
+    { "destination": "/index.html", "source": "/MathMitra" },
+    { "destination": "/index.html", "source": "/MathMitra/" },
+    { "destination": "/:path*", "source": "/MathMitra/:path*" }
   ],
   "headers": [
     {
       "source": "/canvaskit/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=604800, immutable"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=604800, immutable" }
       ]
     },
     {
-      "source": "/math-formula-sheet-m1/canvaskit/(.*)",
+      "source": "/MathMitra/canvaskit/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=604800, immutable"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=604800, immutable" }
       ]
     },
     {
       "source": "/assets/assets/fonts/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=604800, immutable"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=604800, immutable" }
       ]
     },
     {
-      "source": "/math-formula-sheet-m1/assets/assets/fonts/(.*)",
+      "source": "/MathMitra/assets/assets/fonts/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=604800, immutable"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=604800, immutable" }
       ]
     }
   ]

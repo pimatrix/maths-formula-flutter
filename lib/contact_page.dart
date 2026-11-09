@@ -116,10 +116,10 @@ class _ContactPageState extends State<ContactPage> {
                         style: TextStyle(
                             fontSize: 17, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 6),
-                    const Text(
+                    Text(
                       'Thank you for reaching out — we read every message and reply on email when needed.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black54, height: 1.5),
+                      style: TextStyle(color: subtleColor(context), height: 1.5),
                     ),
                     const SizedBox(height: 18),
                     OutlinedButton(
@@ -133,10 +133,10 @@ class _ContactPageState extends State<ContactPage> {
           : ListView(
               padding: const EdgeInsets.all(18),
               children: [
-                const Text(
+                Text(
                   'Questions, feedback, a wrong formula, or need help? Send a message — it reaches us directly on email.',
                   style:
-                      TextStyle(fontSize: 13.5, color: Colors.black54, height: 1.5),
+                      TextStyle(fontSize: 13.5, color: subtleColor(context), height: 1.5),
                 ),
                 const SizedBox(height: 16),
                 SegmentedButton<String>(

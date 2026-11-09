@@ -9,10 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'main.dart';
+import 'tracker.dart';
 
-const String kApiBase = 'https://yashx.xyz/math-formula-sheet-m1';
+const String kApiBase = 'https://yashx.xyz/MathMitra';
 const String kSbUrl = 'https://olekfyhjyymzglnwsaln.supabase.co';
 const String kSbAnon =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sZWtmeWhqeXltemdsbndzYWxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwOTMwMjUsImV4cCI6MjEwOTY2OTAyNX0.NTuobtB6Kfgo_XQ2PQHjCfuoxVMXafKQpwMmkUCMwF8';
@@ -30,7 +32,14 @@ class AuthService extends ChangeNotifier {
   String role = 'user';
   String institution = '';
   String studyLevel = '';
+  bool analyticsOptOut = false;
+  String termsAcceptedAt = '';
   bool loaded = false;
+
+  void setAnalyticsOptOut(bool value) {
+    analyticsOptOut = value;
+    notifyListeners();
+  }
 
   bool get isLoggedIn => _session != null;
   bool get isAdmin => role == 'admin';
@@ -73,6 +82,8 @@ class AuthService extends ChangeNotifier {
     role = 'user';
     institution = '';
     studyLevel = '';
+    analyticsOptOut = false;
+    termsAcceptedAt = '';
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('fs_session_v1');
     notifyListeners();
@@ -115,6 +126,8 @@ class AuthService extends ChangeNotifier {
             'name': name,
             'institution': institution,
             'study_level': studyLevel,
+            'terms_accepted_at': DateTime.now().toUtc().toIso8601String(),
+            'terms_version': '2026-11-09',
           },
         }),
       );
@@ -181,6 +194,8 @@ class AuthService extends ChangeNotifier {
       if (r.statusCode != 200) return;
       final d = jsonDecode(r.body) as Map<String, dynamic>;
       role = (d['role'] as String?) ?? 'user';
+      analyticsOptOut = d['analytics_opt_out'] == true;
+      termsAcceptedAt = (d['terms_accepted_at'] as String?) ?? '';
       final p = d['profile'] as Map<String, dynamic>?;
       institution = (p?['institution'] as String?) ?? '';
       studyLevel = (p?['study_level'] as String?) ?? '';
@@ -224,6 +239,13 @@ void showMsg(BuildContext context, String text) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 }
 
+/// Opens a web page (Terms, Privacy Policy, the portfolio) in the browser.
+Future<void> openLink(String url) async {
+  try {
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  } catch (_) {}
+}
+
 InputDecoration fieldDeco(String label, {String? hint, IconData? icon}) {
   return InputDecoration(
     labelText: label,
@@ -264,6 +286,7 @@ class _AuthPageState extends State<AuthPage> {
   final _confirm = TextEditingController();
   final _institution = TextEditingController();
   String _level = 'College Year 1';
+  bool _termsOk = false;
 
   @override
   void dispose() {
@@ -293,6 +316,11 @@ class _AuthPageState extends State<AuthPage> {
       }
       if (password != _confirm.text) {
         setState(() => _error = 'Password and Confirm Password do not match.');
+        return;
+      }
+      if (!_termsOk) {
+        setState(() => _error =
+            'Please accept the Terms & Conditions and Privacy Policy to create your account.');
         return;
       }
     }
@@ -403,6 +431,36 @@ class _AuthPageState extends State<AuthPage> {
               onChanged: (v) => setState(() => _level = v ?? _level),
             ),
           ],
+          if (_signup) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Checkbox(
+                  value: _termsOk,
+                  onChanged: (v) => setState(() => _termsOk = v ?? false),
+                ),
+                const Expanded(
+                  child: Text(
+                    'I agree to the Terms & Conditions and the Privacy Policy.',
+                    style: TextStyle(fontSize: 13.5),
+                  ),
+                ),
+              ],
+            ),
+            Wrap(
+              spacing: 2,
+              children: [
+                TextButton(
+                  onPressed: () => openLink('https://yashx.xyz/terms'),
+                  child: const Text('Read Terms & Conditions'),
+                ),
+                TextButton(
+                  onPressed: () => openLink('https://yashx.xyz/privacy'),
+                  child: const Text('Read Privacy Policy'),
+                ),
+              ],
+            ),
+          ],
           if (_error.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(_error,
@@ -424,10 +482,10 @@ class _AuthPageState extends State<AuthPage> {
                 : Text(_signup ? 'Create Account' : 'Login'),
           ),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'The same account works on the website too — your data is shared everywhere.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12.5, color: Colors.black54),
+            style: TextStyle(fontSize: 12.5, color: subtleColor(context)),
           ),
         ],
       ),
@@ -453,6 +511,58 @@ class _ProfilePageState extends State<ProfilePage> {
   void dispose() {
     _institution.dispose();
     super.dispose();
+  }
+
+  Future<void> _toggleAnalytics(bool analyticsOn) async {
+    setState(() => _busy = true);
+    final r = await auth.api('/api/me',
+        method: 'PUT', body: {'analytics_opt_out': !analyticsOn});
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (r.statusCode == 200) {
+      auth.setAnalyticsOptOut(!analyticsOn);
+      await Tracker.instance.setLocalOptOut(!analyticsOn);
+      showMsg(
+          context,
+          analyticsOn
+              ? 'Analytics is on. Thank you for helping improve MathMitra.'
+              : 'Analytics is off — collection for your account has stopped.');
+    } else {
+      showMsg(context, apiError(r));
+    }
+  }
+
+  Future<void> _deleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete your account?'),
+        content: const Text(
+            'This permanently deletes your MathMitra account, the formulas you added and your analytics data. You will be logged out. This cannot be undone.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete permanently'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _busy = true);
+    final r = await auth.api('/api/me', method: 'DELETE');
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (r.statusCode == 200) {
+      showMsg(context, 'Your account has been deleted.');
+      await auth.logout();
+      if (mounted) Navigator.of(context).pop();
+    } else {
+      showMsg(context, apiError(r));
+    }
   }
 
   Future<void> _save() async {
@@ -502,12 +612,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       style: const TextStyle(
                           fontSize: 16.5, fontWeight: FontWeight.w700)),
                   Text(auth.email,
-                      style: const TextStyle(
-                          fontSize: 13, color: Colors.black54)),
+                      style: TextStyle(
+                          fontSize: 13, color: subtleColor(context))),
                   Text(auth.isAdmin ? 'Role: Admin' : 'Role: Student',
                       style: TextStyle(
                           fontSize: 13,
-                          color: auth.isAdmin ? kPrimary : Colors.black54,
+                          color: auth.isAdmin ? kPrimary : subtleColor(context),
                           fontWeight: FontWeight.w600)),
                 ],
               ),
@@ -533,6 +643,47 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: _busy ? null : _save,
             style: FilledButton.styleFrom(backgroundColor: kPrimary),
             child: const Text('Save Details'),
+          ),
+          const Divider(height: 38),
+          const Text('Privacy & Account',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 2),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Usage analytics'),
+            subtitle: const Text(
+                'Helps improve MathMitra. What is collected is listed in the Privacy Policy — turn this off and collection for your account stops.'),
+            value: !auth.analyticsOptOut,
+            onChanged: _busy ? null : _toggleAnalytics,
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.description_outlined),
+            title: const Text('Terms & Conditions'),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => openLink('https://yashx.xyz/terms'),
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: const Text('Privacy Policy'),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => openLink('https://yashx.xyz/privacy'),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: _busy ? null : _deleteAccount,
+            icon: const Icon(Icons.delete_forever_outlined, size: 18),
+            label: const Text('Delete My Account'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red,
+              side: const BorderSide(color: Colors.red),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Deleting your account permanently removes your account, the formulas you added and your analytics data. This cannot be undone.',
+            style: TextStyle(fontSize: 12, color: subtleColor(context)),
           ),
           const SizedBox(height: 26),
           OutlinedButton.icon(
@@ -866,9 +1017,9 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [
-          const Text(
+          Text(
             'Create a new class or category — like "M2 — Engineering Mathematics" or "Class 10". Then you can add formulas to it.',
-            style: TextStyle(fontSize: 13.5, color: Colors.black54, height: 1.5),
+            style: TextStyle(fontSize: 13.5, color: subtleColor(context), height: 1.5),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -1020,9 +1171,9 @@ class _SyllabusFormPageState extends State<SyllabusFormPage> {
                 : const Text('Add Syllabus'),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Note: File uploads (PDF/photo) are done on the website; here you can add the syllabus as text.',
-            style: TextStyle(fontSize: 12.5, color: Colors.black54),
+            style: TextStyle(fontSize: 12.5, color: subtleColor(context)),
           ),
         ],
       ),
@@ -1103,13 +1254,13 @@ class _MyFormulasPageState extends State<MyFormulasPage> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _mine.isEmpty
-              ? const Center(
+              ? Center(
                   child: Padding(
                     padding: EdgeInsets.all(24),
                     child: Text(
                       'No formulas added yet. "Add Formula" to add the first one!',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black54),
+                      style: TextStyle(color: subtleColor(context)),
                     ),
                   ),
                 )
@@ -1277,6 +1428,107 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
+  String _when(Object? iso) {
+    final t = (iso ?? '').toString();
+    return t.length >= 16 ? t.substring(0, 16).replaceAll('T', ' ') : t;
+  }
+
+  String _who(Map<String, dynamic> e) =>
+      (e['user_email'] as String?) ?? 'Visitor';
+
+  String _dev(Map<String, dynamic> e) => [e['device'], e['model'], e['os'], e['browser']]
+      .where((x) => x != null && '$x'.isNotEmpty)
+      .join(' · ');
+
+  Widget _eventList(
+    String title,
+    List<dynamic>? items,
+    String Function(Map<String, dynamic>) titleOf,
+    String Function(Map<String, dynamic>) subOf, {
+    int take = 15,
+  }) {
+    if (items == null || items.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+          for (final it in items.take(take))
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(titleOf(it as Map<String, dynamic>),
+                      style: const TextStyle(fontSize: 13.5)),
+                  Text(subOf(it),
+                      style: TextStyle(
+                          fontSize: 12, color: subtleColor(context))),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _activeTile(Map<String, dynamic> u) {
+    final who = (u['user_email'] as String?) ?? 'Visitor';
+    final mins = (u['minutes_ago'] as num?)?.toInt() ?? 0;
+    final when = mins <= 0 ? 'active now' : '$mins min ago';
+    final place = [u['city'], u['country']]
+        .where((x) => x != null && '$x'.isNotEmpty)
+        .join(', ');
+    final battery = u['battery_level'] != null
+        ? 'Battery ${u['battery_level']}%${u['battery_charging'] == true ? ' (charging)' : ''}'
+        : null;
+    final meta = [
+      if (_dev(u).isNotEmpty) _dev(u),
+      if (u['ip'] != null) '${u['ip']}',
+      if (place.isNotEmpty) place,
+      if (battery != null) battery,
+      if (u['network'] != null) '${u['network']}',
+    ].join(' · ');
+    final current =
+        (u['current_formula'] as String?) ?? (u['current_path'] as String?) ?? '';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFFD9D2F5)),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                  child: Text(who,
+                      style: const TextStyle(
+                          fontSize: 13.5, fontWeight: FontWeight.w700))),
+              Text(when,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.green,
+                      fontWeight: FontWeight.w700)),
+            ],
+          ),
+          if (meta.isNotEmpty)
+            Text(meta,
+                style: TextStyle(fontSize: 12, color: subtleColor(context))),
+          if (current.isNotEmpty)
+            Text('Viewing: $current',
+                style: TextStyle(fontSize: 12, color: subtleColor(context))),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -1294,6 +1546,8 @@ class _AdminPageState extends State<AdminPage> {
     final t = (_overview!['totals'] as Map<String, dynamic>?) ?? {};
     final recent =
         (_overview!['recentActivity'] as List<dynamic>?) ?? const [];
+    final activeUsers =
+        (_overview!['activeUsers'] as List<dynamic>?) ?? const [];
     return Scaffold(
       appBar: featureBar('Admin Dashboard'),
       body: RefreshIndicator(
@@ -1320,19 +1574,85 @@ class _AdminPageState extends State<AdminPage> {
                 _stat('Categories', t['categories']),
               ],
             ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Container(
+                  width: 9,
+                  height: 9,
+                  decoration: const BoxDecoration(
+                      color: Colors.green, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 8),
+                const Text('Active users — last 15 minutes',
+                    style:
+                        TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (activeUsers.isEmpty)
+              Text('Nobody is active right now.',
+                  style: TextStyle(color: subtleColor(context), fontSize: 13.5)),
+            for (final u in activeUsers)
+              _activeTile(u as Map<String, dynamic>),
             _topList('Most viewed formulas',
                 _overview!['topFormulas'] as List<dynamic>?),
             _topList('Top categories',
                 _overview!['topCategories'] as List<dynamic>?),
             _topList('Top countries',
                 _overview!['topCountries'] as List<dynamic>?),
+            _topList('Top devices',
+                _overview!['topDevices'] as List<dynamic>?),
+            _topList('Top operating systems',
+                _overview!['topOS'] as List<dynamic>?),
+            _topList('Top browsers',
+                _overview!['topBrowsers'] as List<dynamic>?),
+            _topList('Top referrers',
+                _overview!['topReferrers'] as List<dynamic>?),
+            _eventList(
+              'Recent formula views',
+              _overview!['recentViews'] as List<dynamic>?,
+              (e) => (e['formula_name'] as String?) ?? 'Formula',
+              (e) => [_who(e), _dev(e), _when(e['created_at'])]
+                  .where((x) => x.isNotEmpty)
+                  .join(' · '),
+            ),
+            _eventList(
+              'Recent visitors',
+              _overview!['recentVisitors'] as List<dynamic>?,
+              (e) => (e['path'] as String?) ?? '/',
+              (e) => [
+                _who(e),
+                _dev(e),
+                if (e['ip'] != null) '${e['ip']}',
+                [e['city'], e['country']]
+                    .where((x) => x != null && '$x'.isNotEmpty)
+                    .join(', '),
+                if (e['battery_level'] != null)
+                  'Battery ${e['battery_level']}%',
+                _when(e['created_at']),
+              ].where((x) => x.isNotEmpty).join(' · '),
+              take: 20,
+            ),
+            _eventList(
+              'Recent shares',
+              _overview!['recentShares'] as List<dynamic>?,
+              (e) => (e['formula_name'] as String?) ?? 'Formula',
+              (e) => [
+                _who(e),
+                [e['city'], e['country']]
+                    .where((x) => x != null && '$x'.isNotEmpty)
+                    .join(', '),
+                _when(e['created_at']),
+              ].where((x) => x.isNotEmpty).join(' · '),
+            ),
             const SizedBox(height: 18),
             const Text('Recent additions',
                 style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
             if (recent.isEmpty)
-              const Text('No additions yet.',
-                  style: TextStyle(color: Colors.black54, fontSize: 13.5)),
+              Text('No additions yet.',
+                  style: TextStyle(color: subtleColor(context), fontSize: 13.5)),
             for (final a in recent.take(10))
               ListTile(
                 dense: true,
