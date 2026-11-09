@@ -157,11 +157,6 @@ class _MathLoaderState extends State<MathLoader>
   }
 }
 
-/// Card previews: seed bodies pack several labelled parts into one
-/// line, separated by wide space runs (from the &nbsp; separators in the
-/// source) — break them onto their own lines so cards read cleanly.
-String cardBody(String text) => text.replaceAll(RegExp(r' {3,}'), '\n');
-
 /// Formula ink: dark indigo on light surfaces, light lavender on dark.
 Color formulaInk(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark
@@ -378,6 +373,11 @@ String cleanBody(String html) {
   s = s.replaceAll(RegExp(r'<br\s*/?>'), '\n');
   s = s.replaceAll('</p>', '\n');
   s = s.replaceAll(RegExp(r'<[^>]+>'), '');
+  // Wide &nbsp; runs are segment separators in a few packed bodies
+  // ("Sum of roots: ...   Product of roots: ...") — turn them into
+  // line breaks so the parts don't run together in lists or on the
+  // detail page. A single &nbsp; stays a normal space.
+  s = s.replaceAll(RegExp(r'(&nbsp;\s*){2,}'), '\n');
   s = s
       .replaceAll('&nbsp;', ' ')
       .replaceAll('&gt;', '>')
@@ -1597,8 +1597,8 @@ class _HomePageState extends State<HomePage> {
                                 ? structuredPlain(stripTitlePrefix(
                                     displayText(e.body),
                                     [displayText(e.name), displayName(e, _details)]))
-                                : cardBody(stripTitlePrefix(displayText(e.body),
-                                    [displayText(e.name), displayName(e, _details)])),
+                                : stripTitlePrefix(displayText(e.body),
+                                    [displayText(e.name), displayName(e, _details)]),
                             maxLines: fullText ? null : 3,
                             overflow: fullText
                                 ? TextOverflow.visible

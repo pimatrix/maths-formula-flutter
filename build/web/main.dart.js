@@ -29623,6 +29623,8 @@ s=A.dg(s,r,"\n")
 s=A.dg(s,"</p>","\n")
 r=A.c5("<[^>]+>",!1,!1)
 s=A.dg(s,r,"")
+r=A.c5("(&nbsp;\\s*){2,}",!1,!1)
+s=A.dg(s,r,"\n")
 r=A.dg(s,"&nbsp;"," ")
 r=A.dg(r,"&gt;",">")
 r=A.dg(r,"&lt;","<")
@@ -101415,10 +101417,8 @@ j=t.p
 i=a.d
 e=A.dl(A.b([A.iA(A.dP(A.b([n,B.tE,A.a9(m,g,g,g,A.cl(g,g,A.F(k).ax.a===B.a1?B.aV:B.a9,g,g,g,g,g,g,g,g,11.5,g,g,g,g,g,!0,g,g,g,g,g,g,g,g),g,g)],j),B.b7,B.ab,B.an),1),A.b4t(e,A.eT(i))],j),B.b7,B.ab,B.an,0)
 n=a.e
-if(s)n=A.aRC(A.ab5(A.eT(n),A.b([A.eT(i),A.pj(a,h.f)],l)))
-else{n=A.ab5(A.eT(n),A.b([A.eT(i),A.pj(a,h.f)],l))
-m=A.c5(" {3,}",!1,!1)
-n=A.dg(n,m,"\n")}m=s?g:3
+n=s?A.aRC(A.ab5(A.eT(n),A.b([A.eT(i),A.pj(a,h.f)],l))):A.ab5(A.eT(n),A.b([A.eT(i),A.pj(a,h.f)],l))
+m=s?g:3
 l=s?B.OJ:B.bD
 k=h.c
 if(s){k.toString
