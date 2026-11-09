@@ -17,7 +17,7 @@ import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
 const String kSiteUrl = 'https://yashx.xyz/MathMitra';
-const String kAppVersion = '1.1.1';
+const String kAppVersion = '1.1.2';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -1727,7 +1727,7 @@ class DetailPage extends StatelessWidget {
                           : displayStyle(
                               size: 21,
                               weight: FontWeight.w600,
-                              color: const Color(0xFF26215C),
+                              color: formulaInk(context),
                               height: 1.5),
                     ),
             ),
