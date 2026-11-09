@@ -17,7 +17,7 @@ import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
 const String kSiteUrl = 'https://yashx.xyz/MathMitra';
-const String kAppVersion = '1.2.3';
+const String kAppVersion = '1.2.4';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -2604,19 +2604,18 @@ class _MorePageState extends State<MorePage> {
   Future<void> _makePdf() async {
     if (_pdfBusy) return;
     setState(() => _pdfBusy = true);
-    showMsg(context, 'Preparing your PDF — this can take a few seconds\u2026');
     try {
       final data = _data ?? await _svc.loadBundled();
-      // The PDF libraries load on demand, keeping the first app load light.
-      await pdf_export.loadLibrary();
-      await pdf_export.exportAllFormulasPdf(data, _details);
-      if (mounted && kIsWeb) {
-        showMsg(context, 'PDF downloaded — check your downloads.');
-      }
+      _data = data;
+      if (!mounted) return;
+      setState(() => _pdfBusy = false);
+      _push(PdfDownloadPage(data: data, details: _details));
     } catch (e) {
-      if (mounted) showMsg(context, 'PDF error: $e');
+      if (mounted) {
+        setState(() => _pdfBusy = false);
+        showMsg(context, 'Could not load the formulas: $e');
+      }
     }
-    if (mounted) setState(() => _pdfBusy = false);
   }
 
   void _push(Widget page) {
@@ -2705,8 +2704,9 @@ class _MorePageState extends State<MorePage> {
           ListTile(
             leading:
                 const Icon(Icons.picture_as_pdf_outlined, color: kPrimary),
-            title: const Text('Download All Formulas (PDF)'),
-            subtitle: const Text('Well-structured PDF of all formulas'),
+            title: const Text('Download Formulas (PDF)'),
+            subtitle:
+                const Text('Whole book, one topic, favourites or your pick'),
             trailing: _pdfBusy
                 ? const SizedBox(
                     width: 20,
@@ -2859,6 +2859,266 @@ class _MorePageState extends State<MorePage> {
           ),
           const SizedBox(height: 26),
         ],
+      ),
+    );
+  }
+}
+
+// ------------------------------------------------------------ PDF download
+// The PDF is the user's choice: the whole book, one topic, their
+// favourites, or a hand-picked selection of formulas.
+
+class PdfDownloadPage extends StatefulWidget {
+  final SheetData data;
+  final Map<String, dynamic> details;
+  const PdfDownloadPage({super.key, required this.data, required this.details});
+
+  @override
+  State<PdfDownloadPage> createState() => _PdfDownloadPageState();
+}
+
+class _PdfDownloadPageState extends State<PdfDownloadPage> {
+  bool _busy = false;
+
+  Future<void> _export(
+      List<EntryItem> entries, String heading, String fileName) async {
+    if (_busy || entries.isEmpty) return;
+    setState(() => _busy = true);
+    showMsg(context, 'Preparing your PDF — this can take a few seconds…');
+    try {
+      await pdf_export.loadLibrary();
+      await pdf_export.exportFormulasPdf(
+        data: widget.data,
+        details: widget.details,
+        entries: entries,
+        heading: heading,
+        fileName: fileName,
+      );
+      if (mounted && kIsWeb) {
+        showMsg(context, 'PDF downloaded — check your downloads.');
+      }
+    } catch (e) {
+      if (mounted) showMsg(context, 'PDF error: $e');
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final data = widget.data;
+    String catTitle(String slug) => data.categories
+        .where((c) => c.slug == slug)
+        .map((c) => c.title)
+        .firstOrNull ?? slug;
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: kPrimaryDark,
+        flexibleSpace: Container(decoration: kBarDecoration),
+        foregroundColor: Colors.white,
+        title: const Text('Download PDF', style: TextStyle(fontSize: 17)),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Text(
+              'Choose what goes into your PDF. Every formula comes with its meaning, symbols and a solved example.',
+              style: TextStyle(
+                  fontSize: 13.5, color: subtleColor(context), height: 1.45),
+            ),
+          ),
+          if (_busy)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ListTile(
+            leading: const Icon(Icons.menu_book_outlined, color: kPrimary),
+            title: const Text('Whole formula book'),
+            subtitle: Text('${data.entries.length} formulas'),
+            trailing: const Icon(Icons.download_outlined, color: kPrimary),
+            onTap: _busy
+                ? null
+                : () => _export(data.entries, 'Complete Maths Formula Book',
+                    'MathMitra-Formulas.pdf'),
+          ),
+          ListenableBuilder(
+            listenable: library,
+            builder: (context, _) {
+              final favs = data.entries
+                  .where((e) => library.isFavorite(e.id))
+                  .toList();
+              return ListTile(
+                leading: const Icon(Icons.favorite, color: Color(0xFFE0245E)),
+                title: const Text('My Favourites'),
+                subtitle: Text(favs.isEmpty
+                    ? 'No favourites yet — tap the heart on any formula'
+                    : '${favs.length} formulas'),
+                trailing: const Icon(Icons.download_outlined, color: kPrimary),
+                onTap: _busy || favs.isEmpty
+                    ? null
+                    : () => _export(
+                        favs, 'My Favourites', 'MathMitra-Favourites.pdf'),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.checklist_outlined, color: kPrimary),
+            title: const Text('Choose formulas…'),
+            subtitle: const Text('Tick exactly the ones you want'),
+            trailing: const Icon(Icons.chevron_right, color: kPrimary),
+            onTap: _busy
+                ? null
+                : () async {
+                    final picked =
+                        await Navigator.of(context).push<List<EntryItem>>(
+                      MaterialPageRoute(
+                          builder: (_) => PdfPickPage(
+                              data: data, details: widget.details)),
+                    );
+                    if (picked != null && picked.isNotEmpty && mounted) {
+                      _export(picked, 'Selected Formulas',
+                          'MathMitra-Selected-Formulas.pdf');
+                    }
+                  },
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+            child: Text('By topic',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: subtleColor(context))),
+          ),
+          for (final cat in data.categories)
+            if (data.entries.any((e) => e.category == cat.slug))
+              ListTile(
+                leading: const Icon(Icons.topic_outlined, color: kPrimary),
+                title: Text(cat.title),
+                subtitle: Text(
+                    '${data.entries.where((e) => e.category == cat.slug).length} formulas'),
+                trailing:
+                    const Icon(Icons.download_outlined, color: kPrimary),
+                onTap: _busy
+                    ? null
+                    : () => _export(
+                        data.entries
+                            .where((e) => e.category == cat.slug)
+                            .toList(),
+                        catTitle(cat.slug),
+                        'MathMitra-${cat.slug}.pdf'),
+              ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+}
+
+class PdfPickPage extends StatefulWidget {
+  final SheetData data;
+  final Map<String, dynamic> details;
+  const PdfPickPage({super.key, required this.data, required this.details});
+
+  @override
+  State<PdfPickPage> createState() => _PdfPickPageState();
+}
+
+class _PdfPickPageState extends State<PdfPickPage> {
+  String _q = '';
+  final Set<String> _selected = {};
+
+  @override
+  Widget build(BuildContext context) {
+    final data = widget.data;
+    String catTitle(String slug) => data.categories
+        .where((c) => c.slug == slug)
+        .map((c) => c.title)
+        .firstOrNull ?? slug;
+    final q = _q.trim().toLowerCase();
+    final shown = data.entries.where((e) {
+      if (q.isEmpty) return true;
+      return displayName(e, widget.details).toLowerCase().contains(q) ||
+          catTitle(e.category).toLowerCase().contains(q);
+    }).toList();
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: kPrimaryDark,
+        flexibleSpace: Container(decoration: kBarDecoration),
+        foregroundColor: Colors.white,
+        title: const Text('Choose formulas', style: TextStyle(fontSize: 17)),
+        actions: [
+          TextButton(
+            onPressed: () => setState(
+                () => _selected.addAll(data.entries.map((e) => e.id))),
+            child: const Text('All', style: TextStyle(color: Colors.white)),
+          ),
+          TextButton(
+            onPressed: () => setState(() => _selected.clear()),
+            child: const Text('None', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
+            child: TextField(
+              onChanged: (v) => setState(() => _q = v),
+              decoration: const InputDecoration(
+                hintText: 'Search formulas…',
+                prefixIcon: Icon(Icons.search, size: 20),
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: shown.length,
+              itemBuilder: (context, i) {
+                final e = shown[i];
+                return CheckboxListTile(
+                  dense: true,
+                  value: _selected.contains(e.id),
+                  onChanged: (v) => setState(() {
+                    if (v == true) {
+                      _selected.add(e.id);
+                    } else {
+                      _selected.remove(e.id);
+                    }
+                  }),
+                  title: Text(displayName(e, widget.details),
+                      style: const TextStyle(fontSize: 13.5)),
+                  subtitle: Text(catTitle(e.category),
+                      style: const TextStyle(fontSize: 11.5)),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 6, 14, 10),
+          child: Row(
+            children: [
+              Expanded(child: Text('${_selected.length} selected')),
+              FilledButton.icon(
+                style: FilledButton.styleFrom(backgroundColor: kPrimary),
+                onPressed: _selected.isEmpty
+                    ? null
+                    : () => Navigator.of(context).pop(data.entries
+                        .where((e) => _selected.contains(e.id))
+                        .toList()),
+                icon: const Icon(Icons.download_outlined, size: 18),
+                label: const Text('Download PDF'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -10,13 +10,20 @@ const List<String> _pdfMonths = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ];
 
-/// Builds a well-structured PDF of every formula — grouped by class and
-/// section, each entry with its meaning, symbols and solved example — and
-/// opens the share / download sheet. Fonts: Inter for text, Space Grotesk
-/// for names, DejaVu Sans as fallback for maths glyphs Inter lacks
-/// (∮, ∈, ⊂, ∠…), so no symbol turns into a blank box.
-Future<void> exportAllFormulasPdf(
-    SheetData data, Map<String, dynamic> details) async {
+/// Builds a well-structured PDF of the given formulas — grouped by
+/// class and section, each entry with its meaning, symbols and solved
+/// example — and opens the share / download sheet. Fonts: Inter for
+/// text, Space Grotesk for names, DejaVu Sans as fallback for maths
+/// glyphs Inter lacks (∮, ∈, ⊂, ∠…), so no symbol turns into a blank
+/// box. [entries] decides what goes in: the whole book, one topic,
+/// the user's favourites, or a hand-picked selection.
+Future<void> exportFormulasPdf({
+  required SheetData data,
+  required Map<String, dynamic> details,
+  required List<EntryItem> entries,
+  required String heading,
+  required String fileName,
+}) async {
   final inter =
       pw.Font.ttf(await rootBundle.load('assets/fonts/Inter-400.ttf'));
   final interBold =
@@ -55,11 +62,11 @@ Future<void> exportAllFormulasPdf(
       pw.Text('MathMitra',
           style: pw.TextStyle(font: grotesk, fontSize: 30, color: indigo)),
       pw.SizedBox(height: 4),
-      pw.Text('Complete Maths Formula Book',
+      pw.Text(heading,
           style: pw.TextStyle(font: interBold, fontSize: 15, color: dark)),
       pw.SizedBox(height: 4),
       pw.Text(
-          '${data.entries.length} formulas with meaning, symbols and solved examples · ${now.day} ${_pdfMonths[now.month - 1]} ${now.year}',
+          '${entries.length} formulas with meaning, symbols and solved examples · ${now.day} ${_pdfMonths[now.month - 1]} ${now.year}',
           style: pw.TextStyle(font: inter, fontSize: 10.5, color: grey)),
       pw.SizedBox(height: 10),
       pw.Divider(color: indigo, thickness: 1.4),
@@ -79,7 +86,7 @@ Future<void> exportAllFormulasPdf(
     ));
     for (final cat in data.categories.where((c) => c.group == g)) {
       final catEntries =
-          data.entries.where((e) => e.category == cat.slug).toList();
+          entries.where((e) => e.category == cat.slug).toList();
       if (catEntries.isEmpty) continue;
       widgets.add(pw.Padding(
         padding: const pw.EdgeInsets.only(top: 10, bottom: 4),
@@ -183,8 +190,54 @@ Future<void> exportAllFormulasPdf(
     }
   }
 
-  final doc = pw.Document(
-      title: 'MathMitra — Complete Formula Book', author: 'MathMitra');
+  // Entries whose category is not in the known list (possible for
+  // user-added content) still belong in the PDF: one plain group each.
+  final known = data.categories.map((c) => c.slug).toSet();
+  final leftoverCats = <String>[];
+  for (final e in entries) {
+    if (!known.contains(e.category) && !leftoverCats.contains(e.category)) {
+      leftoverCats.add(e.category);
+    }
+  }
+  for (final slug in leftoverCats) {
+    widgets.add(pw.Padding(
+      padding: const pw.EdgeInsets.only(top: 10, bottom: 4),
+      child: pw.Text(slug,
+          style: pw.TextStyle(font: interBold, fontSize: 13.5, color: indigo)),
+    ));
+    for (final e in entries.where((x) => x.category == slug)) {
+      final name = displayName(e, details);
+      final body =
+          stripTitlePrefix(displayText(e.body), [displayText(e.name), name]);
+      widgets.add(pw.Padding(
+        padding: const pw.EdgeInsets.only(bottom: 9),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(name,
+                style: pw.TextStyle(font: grotesk, fontSize: 12, color: dark)),
+            pw.SizedBox(height: 3),
+            if (e.kind == 'formula')
+              pw.Container(
+                width: double.infinity,
+                color: boxBg,
+                padding: const pw.EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 6),
+                child: pw.Text(body,
+                    style: pw.TextStyle(
+                        font: interBold, fontSize: 11, color: dark)),
+              )
+            else
+              pw.Text(structuredPlain(body),
+                  style: pw.TextStyle(
+                      font: inter, fontSize: 10.5, height: 1.45)),
+          ],
+        ),
+      ));
+    }
+  }
+
+  final doc = pw.Document(title: 'MathMitra — $heading', author: 'MathMitra');
   doc.addPage(pw.MultiPage(
     theme: theme,
     pageFormat: PdfPageFormat.a4,
@@ -201,5 +254,16 @@ Future<void> exportAllFormulasPdf(
     build: (ctx) => widgets,
   ));
   final bytes = await doc.save();
-  await deliverPdf(bytes, 'MathMitra-Formulas.pdf');
+  await deliverPdf(bytes, fileName);
 }
+
+/// The whole book, as before.
+Future<void> exportAllFormulasPdf(
+        SheetData data, Map<String, dynamic> details) =>
+    exportFormulasPdf(
+      data: data,
+      details: details,
+      entries: data.entries,
+      heading: 'Complete Maths Formula Book',
+      fileName: 'MathMitra-Formulas.pdf',
+    );
