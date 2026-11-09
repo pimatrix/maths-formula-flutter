@@ -58,6 +58,7 @@ class AuthService extends ChangeNotifier {
     loaded = true;
     notifyListeners();
     if (_session != null) await fetchMe();
+    if (_session != null) library.refresh();
   }
 
   Future<void> _save(Map<String, dynamic> d) async {
@@ -102,6 +103,7 @@ class AuthService extends ChangeNotifier {
       }
       await _save(d);
       await fetchMe();
+      library.refresh();
       return null;
     } catch (_) {
       return 'Network error. Please try again.';
@@ -138,6 +140,7 @@ class AuthService extends ChangeNotifier {
       if (d['access_token'] != null) {
         await _save(d);
         await fetchMe();
+        library.refresh();
       }
       return null;
     } catch (_) {
@@ -156,6 +159,7 @@ class AuthService extends ChangeNotifier {
       } catch (_) {}
     }
     await _clear();
+    await library.onSignedOut();
   }
 
   Future<String?> _validToken() async {
@@ -2067,6 +2071,14 @@ class _VisitorDetailPageState extends State<VisitorDetailPage> {
         return Icons.functions;
       case 'share':
         return Icons.share_outlined;
+      case 'favorite_add':
+        return Icons.favorite;
+      case 'favorite_remove':
+        return Icons.favorite_border;
+      case 'folder_create':
+        return Icons.create_new_folder_outlined;
+      case 'folder_add':
+        return Icons.folder_open_outlined;
       case 'ai_question':
         return Icons.auto_awesome_outlined;
       case 'pageview':
@@ -2082,6 +2094,14 @@ class _VisitorDetailPageState extends State<VisitorDetailPage> {
         return 'Saw formula: ${(e['formula_name'] as String?) ?? ''}';
       case 'share':
         return 'Shared: ${(e['formula_name'] as String?) ?? ''}';
+      case 'favorite_add':
+        return 'Favourited: ${(e['formula_name'] as String?) ?? ''}';
+      case 'favorite_remove':
+        return 'Removed favourite: ${(e['formula_name'] as String?) ?? ''}';
+      case 'folder_create':
+        return 'Created a folder';
+      case 'folder_add':
+        return 'Added to a folder: ${(e['formula_name'] as String?) ?? ''}';
       case 'ai_question':
         return 'Asked the AI Tutor';
       case 'pageview':
@@ -2340,6 +2360,8 @@ class InsightsPage extends StatelessWidget {
         children: [
           _top('Most viewed formulas',
               overview['topFormulas'] as List<dynamic>?, context),
+          _top('Most favourited formulas',
+              overview['topFavorited'] as List<dynamic>?, context),
           _top('Top categories', overview['topCategories'] as List<dynamic>?,
               context),
           _top('Top countries', overview['topCountries'] as List<dynamic>?,
@@ -2368,6 +2390,444 @@ class InsightsPage extends StatelessWidget {
                   style: const TextStyle(fontSize: 12)),
             ),
         ],
+      ),
+    );
+  }
+}
+
+// ------------------------------------------------------------- library
+// Favourites + personal folders. For a signed-in user the library is
+// saved in the account (server: /api/library) and follows them to any
+// device. A local cache makes it instant and keeps it usable while
+// logged out — a guest's library lives on this device only.
+
+class LibFolder {
+  String id;
+  String name;
+  List<String> items;
+  LibFolder({required this.id, required this.name, List<String>? items})
+      : items = items ?? [];
+
+  factory LibFolder.fromJson(Map<String, dynamic> j) => LibFolder(
+        id: (j['id'] ?? '').toString(),
+        name: (j['name'] ?? '').toString(),
+        items: ((j['items'] as List?) ?? []).map((e) => e.toString()).toList(),
+      );
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'items': items};
+}
+
+class LibraryService extends ChangeNotifier {
+  List<String> favorites = [];
+  List<LibFolder> folders = [];
+  bool loaded = false;
+  static const String _cacheKey = 'mm_library_v1';
+
+  Map<String, dynamic> toJson() => {
+        'favorites': favorites,
+        'folders': folders.map((f) => f.toJson()).toList(),
+      };
+
+  void applyJson(Map<String, dynamic> j) {
+    favorites =
+        ((j['favorites'] as List?) ?? []).map((e) => e.toString()).toList();
+    folders = ((j['folders'] as List?) ?? [])
+        .whereType<Map>()
+        .map((m) => LibFolder.fromJson(Map<String, dynamic>.from(m)))
+        .toList();
+  }
+
+  Future<void> init() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_cacheKey);
+      if (raw != null) applyJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {}
+    loaded = true;
+    notifyListeners();
+    if (auth.isLoggedIn) await refresh();
+  }
+
+  Future<void> refresh() async {
+    if (!auth.isLoggedIn) return;
+    try {
+      final r = await auth.api('/api/library');
+      if (r.statusCode == 200) {
+        final d = jsonDecode(r.body) as Map<String, dynamic>;
+        final lib = d['library'];
+        if (lib is Map) {
+          applyJson(Map<String, dynamic>.from(lib));
+          await _cache();
+          notifyListeners();
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _cache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_cacheKey, jsonEncode(toJson()));
+    } catch (_) {}
+  }
+
+  Future<void> _save() async {
+    await _cache();
+    notifyListeners();
+    if (!auth.isLoggedIn) return;
+    try {
+      await auth.api('/api/library',
+          method: 'PUT', body: {'library': toJson()});
+    } catch (_) {}
+  }
+
+  bool isFavorite(String key) => favorites.contains(key);
+
+  void toggleFavorite(EntryItem e) {
+    if (favorites.contains(e.id)) {
+      favorites.remove(e.id);
+      Tracker.instance.favoriteRemove(displayText(e.name), e.category);
+    } else {
+      favorites.add(e.id);
+      Tracker.instance.favoriteAdd(displayText(e.name), e.category);
+    }
+    _save();
+  }
+
+  LibFolder createFolder(String name) {
+    final f = LibFolder(
+        id: 'f${DateTime.now().millisecondsSinceEpoch}',
+        name: name.trim());
+    folders.add(f);
+    Tracker.instance.folderCreate();
+    _save();
+    return f;
+  }
+
+  void renameFolder(LibFolder f, String name) {
+    f.name = name.trim();
+    _save();
+  }
+
+  void deleteFolder(LibFolder f) {
+    folders.remove(f);
+    _save();
+  }
+
+  bool inFolder(LibFolder f, String key) => f.items.contains(key);
+
+  void toggleInFolder(LibFolder f, EntryItem e) {
+    if (f.items.contains(e.id)) {
+      f.items.remove(e.id);
+    } else {
+      f.items.add(e.id);
+      Tracker.instance.folderAdd(displayText(e.name), e.category);
+    }
+    _save();
+  }
+
+  Future<void> onSignedOut() async {
+    favorites = [];
+    folders = [];
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_cacheKey);
+    } catch (_) {}
+    notifyListeners();
+  }
+}
+
+final LibraryService library = LibraryService();
+
+Future<String?> askFolderName(BuildContext context, {String initial = ''}) {
+  final ctl = TextEditingController(text: initial);
+  return showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(initial.isEmpty ? 'New folder' : 'Rename folder'),
+      content: TextField(
+        controller: ctl,
+        autofocus: true,
+        maxLength: 60,
+        decoration: const InputDecoration(
+            hintText: 'e.g. Exam ke liye', labelText: 'Folder name'),
+        onSubmitted: (v) => Navigator.pop(ctx, v),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+        FilledButton(
+            onPressed: () => Navigator.pop(ctx, ctl.text),
+            child: const Text('Save')),
+      ],
+    ),
+  );
+}
+
+Future<void> showFolderPicker(BuildContext context, EntryItem entry) async {
+  await showModalBottomSheet<void>(
+    context: context,
+    builder: (ctx) => ListenableBuilder(
+      listenable: library,
+      builder: (context, _) => SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const ListTile(
+                title: Text('Add to folder',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                subtitle:
+                    Text('Tick the folders this formula should live in'),
+              ),
+              if (library.folders.isEmpty)
+                const ListTile(
+                    subtitle: Text('No folders yet — create one below.')),
+              for (final f in library.folders)
+                CheckboxListTile(
+                  value: library.inFolder(f, entry.id),
+                  title: Text(f.name),
+                  subtitle: Text('${f.items.length} formulas'),
+                  onChanged: (_) => library.toggleInFolder(f, entry),
+                ),
+              ListTile(
+                leading: const Icon(Icons.create_new_folder_outlined),
+                title: const Text('New folder'),
+                onTap: () async {
+                  final name = await askFolderName(ctx);
+                  if (name != null && name.trim().isNotEmpty) {
+                    final f = library.createFolder(name);
+                    library.toggleInFolder(f, entry);
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class LibraryPage extends StatefulWidget {
+  const LibraryPage({super.key});
+  @override
+  State<LibraryPage> createState() => _LibraryPageState();
+}
+
+class _LibraryPageState extends State<LibraryPage> {
+  @override
+  void initState() {
+    super.initState();
+    library.refresh();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: featureBar('My Library'),
+      body: ListenableBuilder(
+        listenable: library,
+        builder: (context, _) => ListView(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          children: [
+            if (!auth.isLoggedIn)
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: kPrimary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Guest mode — favourites and folders are saved on this '
+                  'device only. Log in to keep them in your account and '
+                  'open them on any device.',
+                  style: TextStyle(fontSize: 13, height: 1.45),
+                ),
+              ),
+            ListTile(
+              leading: const Icon(Icons.favorite, color: Color(0xFFE0245E)),
+              title: const Text('Favourites'),
+              subtitle: Text('${library.favorites.length} formulas'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => FolderEntriesPage(
+                      title: 'Favourites',
+                      keys: library.favorites,
+                      isFavorites: true))),
+            ),
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text('Your folders',
+                        style: TextStyle(
+                            fontSize: 14.5, fontWeight: FontWeight.w700)),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      final name = await askFolderName(context);
+                      if (name != null && name.trim().isNotEmpty) {
+                        library.createFolder(name);
+                      }
+                    },
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('New folder'),
+                  ),
+                ],
+              ),
+            ),
+            if (library.folders.isEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                child: Text(
+                    'No folders yet. Create one — for example "Exam ke liye" — and add formulas to it from any formula page.',
+                    style:
+                        TextStyle(color: subtleColor(context), fontSize: 13)),
+              ),
+            for (final f in library.folders)
+              ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(f.name),
+                subtitle: Text('${f.items.length} formulas'),
+                trailing: PopupMenuButton<String>(
+                  onSelected: (v) async {
+                    if (v == 'rename') {
+                      final name =
+                          await askFolderName(context, initial: f.name);
+                      if (name != null && name.trim().isNotEmpty) {
+                        library.renameFolder(f, name);
+                      }
+                    } else if (v == 'delete') {
+                      library.deleteFolder(f);
+                    }
+                  },
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(value: 'rename', child: Text('Rename')),
+                    PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  ],
+                ),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => FolderEntriesPage(
+                        title: f.name, keys: f.items, folder: f))),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FolderEntriesPage extends StatefulWidget {
+  final String title;
+  final List<String> keys;
+  final LibFolder? folder;
+  final bool isFavorites;
+  const FolderEntriesPage(
+      {super.key,
+      required this.title,
+      required this.keys,
+      this.folder,
+      this.isFavorites = false});
+  @override
+  State<FolderEntriesPage> createState() => _FolderEntriesPageState();
+}
+
+class _FolderEntriesPageState extends State<FolderEntriesPage> {
+  List<EntryItem> _entries = [];
+  Map<String, dynamic> _details = {};
+  List<CategoryItem> _cats = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final ds = DataService();
+    var sheet = await ds.loadBundled();
+    final cache = await ds.loadCache();
+    if (cache != null) sheet = cache;
+    final net = await ds.fetchNetwork();
+    if (net != null) sheet = net;
+    _details = await ds.details();
+    _cats = sheet.categories;
+    final byId = {for (final e in sheet.entries) e.id: e};
+    _entries = widget.keys
+        .map((k) => byId[k])
+        .whereType<EntryItem>()
+        .toList();
+    if (mounted) setState(() => _loading = false);
+  }
+
+  String _catTitle(String slug) {
+    for (final c in _cats) {
+      if (c.slug == slug) return c.title;
+    }
+    return slug;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: featureBar(widget.title),
+      body: ListenableBuilder(
+        listenable: library,
+        builder: (context, _) {
+          if (_loading) return const MathLoader();
+          final visible = _entries
+              .where((e) => widget.isFavorites
+                  ? library.isFavorite(e.id)
+                  : widget.folder == null ||
+                      widget.folder!.items.contains(e.id))
+              .toList();
+          if (visible.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Text(
+                  widget.isFavorites
+                      ? 'Nothing here yet — tap the heart on any formula to add it here.'
+                      : 'This folder is empty — open any formula and use "Add to Folder".',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: subtleColor(context), fontSize: 14),
+                ),
+              ),
+            );
+          }
+          return ListView.separated(
+            itemCount: visible.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (context, i) {
+              final e = visible[i];
+              return ListTile(
+                title: Text(displayName(e, _details)),
+                subtitle: Text(_catTitle(e.category)),
+                trailing: IconButton(
+                  icon: const Icon(Icons.close, size: 19),
+                  tooltip: 'Remove',
+                  onPressed: () {
+                    if (widget.isFavorites) {
+                      library.toggleFavorite(e);
+                    } else if (widget.folder != null) {
+                      library.toggleInFolder(widget.folder!, e);
+                    }
+                  },
+                ),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => DetailPage(
+                        entry: e,
+                        categoryTitle: _catTitle(e.category),
+                        details: _details))),
+              );
+            },
+          );
+        },
       ),
     );
   }

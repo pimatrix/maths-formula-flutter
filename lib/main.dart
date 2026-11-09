@@ -17,7 +17,7 @@ import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
 const String kSiteUrl = 'https://yashx.xyz/MathMitra';
-const String kAppVersion = '1.1.8';
+const String kAppVersion = '1.2.0';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -1172,6 +1172,7 @@ class _HomePageState extends State<HomePage> {
     _load();
     auth.addListener(_onAuth);
     auth.load();
+    library.init();
     Tracker.instance.start();
     BrowseSel.instance.addListener(_onBrowse);
     DataPing.instance.addListener(_refreshData);
@@ -1753,6 +1754,22 @@ class _HomePageState extends State<HomePage> {
                                 )
                               else
                                 const Spacer(),
+                              ListenableBuilder(
+                                listenable: library,
+                                builder: (context, _) => IconButton(
+                                  icon: Icon(
+                                      library.isFavorite(e.id)
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      size: 19),
+                                  color: library.isFavorite(e.id)
+                                      ? const Color(0xFFE0245E)
+                                      : kPrimary,
+                                  tooltip: 'Favourite',
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: () => library.toggleFavorite(e),
+                                ),
+                              ),
                               IconButton(
                                 icon: const Icon(Icons.share_outlined,
                                     size: 19),
@@ -1970,6 +1987,35 @@ class DetailPage extends StatelessWidget {
               style: TextStyle(fontSize: 12, color: subtleColor(context)),
             ),
           ],
+          const SizedBox(height: 12),
+          ListenableBuilder(
+            listenable: library,
+            builder: (context, _) {
+              final fav = library.isFavorite(entry.id);
+              return Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => library.toggleFavorite(entry),
+                      icon: Icon(
+                          fav ? Icons.favorite : Icons.favorite_border,
+                          size: 18,
+                          color: fav ? const Color(0xFFE0245E) : null),
+                      label: Text(fav ? 'Favourited' : 'Favourite'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => showFolderPicker(context, entry),
+                      icon: const Icon(Icons.folder_open_outlined, size: 18),
+                      label: const Text('Add to Folder'),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
           const SizedBox(height: 14),
           Container(
             width: double.infinity,
@@ -2592,6 +2638,13 @@ class _MorePageState extends State<MorePage> {
             onTap: _pdfBusy ? null : _makePdf,
           ),
           const Divider(),
+          ListTile(
+            leading: const Icon(Icons.folder_special_outlined),
+            title: const Text('My Library'),
+            subtitle:
+                const Text('Favourites and your personal folders'),
+            onTap: () => _push(const LibraryPage()),
+          ),
           if (loggedIn)
             ListTile(
               leading: const Icon(Icons.list_alt_outlined),

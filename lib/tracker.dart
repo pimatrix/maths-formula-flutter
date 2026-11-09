@@ -147,4 +147,15 @@ class Tracker {
       send('formula_view', path: '/formula', formulaName: name, category: category);
 
   void share(String name) => send('share', formulaName: name);
+
+  void favoriteAdd(String name, String category) => send('favorite_add',
+      path: '/formula', formulaName: name, category: category);
+
+  void favoriteRemove(String name, String category) => send('favorite_remove',
+      path: '/formula', formulaName: name, category: category);
+
+  void folderCreate() => send('folder_create', path: '/library');
+
+  void folderAdd(String name, String category) => send('folder_add',
+      path: '/library', formulaName: name, category: category);
 }

@@ -3,6 +3,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:maths_formula_sheet/main.dart';
+import 'package:maths_formula_sheet/features.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets('App builds and shows its title', (WidgetTester tester) async {
@@ -134,4 +136,32 @@ void main() {
     expect(rows[1], ['sin θ', '0']);
     expect(parseTable('plain text, no table'), isEmpty);
   });
+  test('library: favourites, folders and account JSON round-trip', () async {
+    SharedPreferences.setMockInitialValues({});
+    final lib = LibraryService();
+    await lib.init();
+    const e1 = EntryItem(
+        id: 'seed-1', category: 'basics-algebra', section: '', name: 'Test One',
+        body: 'a+b', kind: 'formula', userAdded: false, about: '', symbols: '', example: '');
+    const e2 = EntryItem(
+        id: 'seed-2', category: 'basics-algebra', section: '', name: 'Test Two',
+        body: 'a-b', kind: 'formula', userAdded: false, about: '', symbols: '', example: '');
+    lib.toggleFavorite(e1);
+    expect(lib.isFavorite('seed-1'), isTrue);
+    final f = lib.createFolder('Exam ke liye');
+    lib.toggleInFolder(f, e1);
+    lib.toggleInFolder(f, e2);
+    expect(f.items.length, 2);
+    lib.toggleInFolder(f, e2);
+    expect(f.items, ['seed-1']);
+    // Simulate an account restore: a fresh service applying the JSON.
+    final lib2 = LibraryService();
+    lib2.applyJson(lib.toJson());
+    expect(lib2.favorites, ['seed-1']);
+    expect(lib2.folders.single.name, 'Exam ke liye');
+    expect(lib2.folders.single.items, ['seed-1']);
+    lib.toggleFavorite(e1);
+    expect(lib.isFavorite('seed-1'), isFalse);
+  });
+
 }
