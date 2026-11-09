@@ -1,9 +1,9 @@
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 
 import 'main.dart';
+import 'pdf_delivery.dart';
 
 const List<String> _pdfMonths = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -201,5 +201,5 @@ Future<void> exportAllFormulasPdf(
     build: (ctx) => widgets,
   ));
   final bytes = await doc.save();
-  await Printing.sharePdf(bytes: bytes, filename: 'MathMitra-Formulas.pdf');
+  await deliverPdf(bytes, 'MathMitra-Formulas.pdf');
 }
