@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'ai_page.dart';
 import 'contact_page.dart';
 import 'features.dart';
-import 'pdf_export.dart';
+import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/math-formula-sheet-m1/api/formulas';
 const String kCacheKey = 'fs_api_cache_v1';
@@ -2135,7 +2135,9 @@ class _MorePageState extends State<MorePage> {
     setState(() => _pdfBusy = true);
     try {
       final data = _data ?? await _svc.loadBundled();
-      await exportAllFormulasPdf(data, _details);
+      // The PDF libraries load on demand, keeping the first app load light.
+      await pdf_export.loadLibrary();
+      await pdf_export.exportAllFormulasPdf(data, _details);
     } catch (_) {
       if (mounted) {
         showMsg(context, 'Could not create the PDF. Please try again.');

@@ -31,8 +31,37 @@
 
   <title>MathMitra — Maths Formula Book</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    #splash {
+      position: fixed; inset: 0; z-index: 9999;
+      background: linear-gradient(135deg, #2A1A5E, #4338CA 55%, #7C3AED);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 18px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    #splash .logo { color: #fff; font-size: 34px; font-weight: 700; letter-spacing: .5px; }
+    #splash .sub { color: rgba(255,255,255,.75); font-size: 14px; margin-top: -10px; }
+    #splash .spin {
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 4px solid rgba(255,255,255,.25); border-top-color: #fff;
+      animation: mmspin 0.9s linear infinite;
+    }
+    @keyframes mmspin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
+  <div id="splash">
+    <div class="logo">MathMitra</div>
+    <div class="sub">Maths Formula Book</div>
+    <div class="spin"></div>
+  </div>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var s = document.getElementById('splash');
+      if (s) s.remove();
+    });
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

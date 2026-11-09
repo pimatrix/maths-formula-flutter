@@ -1,1 +1,54 @@
-{"rewrites":[{"destination":"/index.html","source":"/math-formula-sheet-m1"},{"destination":"/index.html","source":"/math-formula-sheet-m1/"},{"destination":"/:path*","source":"/math-formula-sheet-m1/:path*"}]}
+{
+  "rewrites": [
+    {
+      "destination": "/index.html",
+      "source": "/math-formula-sheet-m1"
+    },
+    {
+      "destination": "/index.html",
+      "source": "/math-formula-sheet-m1/"
+    },
+    {
+      "destination": "/:path*",
+      "source": "/math-formula-sheet-m1/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/canvaskit/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/math-formula-sheet-m1/canvaskit/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/assets/assets/fonts/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/math-formula-sheet-m1/assets/assets/fonts/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, immutable"
+        }
+      ]
+    }
+  ]
+}

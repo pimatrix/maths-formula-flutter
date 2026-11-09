@@ -27,22 +27,25 @@ flutter:
     - assets/formulas-seed.json
     - assets/formula-details.json
     - assets/fonts/DejaVuSans.ttf
+    - assets/fonts/Inter-400.ttf
+    - assets/fonts/Inter-700.ttf
+    - assets/fonts/SpaceGrotesk-700.ttf
   fonts:
     - family: Inter
       fonts:
-        - asset: assets/fonts/Inter-400.ttf
+        - asset: assets/fonts/Inter-400.woff2
           weight: 400
-        - asset: assets/fonts/Inter-500.ttf
+        - asset: assets/fonts/Inter-500.woff2
           weight: 500
-        - asset: assets/fonts/Inter-600.ttf
+        - asset: assets/fonts/Inter-600.woff2
           weight: 600
-        - asset: assets/fonts/Inter-700.ttf
+        - asset: assets/fonts/Inter-700.woff2
           weight: 700
     - family: Space Grotesk
       fonts:
-        - asset: assets/fonts/SpaceGrotesk-500.ttf
+        - asset: assets/fonts/SpaceGrotesk-500.woff2
           weight: 500
-        - asset: assets/fonts/SpaceGrotesk-600.ttf
+        - asset: assets/fonts/SpaceGrotesk-600.woff2
           weight: 600
-        - asset: assets/fonts/SpaceGrotesk-700.ttf
+        - asset: assets/fonts/SpaceGrotesk-700.woff2
           weight: 700
