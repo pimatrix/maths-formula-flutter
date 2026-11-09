@@ -1,4 +1,4 @@
-package com.example.maths_formula_sheet
+package xyz.yashx.mathmitra
 
 import io.flutter.embedding.android.FlutterActivity
 
