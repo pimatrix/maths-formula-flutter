@@ -54,6 +54,24 @@ jobs:
           }
           GRADLE
 
+      - name: Restore release signing key (when configured)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android/app/mathmitra-upload.p12
+            cat > android/key.properties << EOF
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEYSTORE_PASSWORD
+          keyAlias=mathmitra
+          storeFile=mathmitra-upload.p12
+          EOF
+            echo "Release signing key restored."
+          else
+            echo "No signing key configured; falling back to debug signing."
+          fi
+
       - name: Build release APK (up to 3 attempts)
         run: |
           for attempt in 1 2 3; do
