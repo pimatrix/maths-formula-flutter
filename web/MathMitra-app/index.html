@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MathMitra — Maths Formula App | Download for Android &amp; Web</title>
 <meta name="description" content="MathMitra is a free maths formula app for engineering students: 291 formulas with meanings, symbols and solved examples, an AI Tutor, photo scan and a one-tap PDF of the whole book. Download the Android app or open it on the web.">
-<link rel="icon" type="image/png" href="icon.png">
+<link rel="icon" type="image/png" href="/MathMitra-app/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -40,7 +40,7 @@
   .btn svg{flex:none}
   /* hero */
   .hero{background:linear-gradient(160deg,#221457 0%,#2A1A5E 45%,#4338CA 100%);color:#fff;overflow:hidden}
-  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;padding:64px 20px 72px;align-items:center}
+  .hero .wrap{display:grid;grid-template-columns:1fr;max-width:820px;gap:44px;padding:64px 20px 72px;align-items:center}
   .chip{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:5px 12px;border-radius:999px;font-size:13px;font-weight:500}
   .chip .dot{width:8px;height:8px;border-radius:50%;background:#4ADE80}
   .hero h1{font-size:clamp(38px,5.2vw,58px);line-height:1.06;font-weight:700;margin:18px 0 14px}
@@ -56,6 +56,12 @@
   .phone{width:min(320px,86vw);aspect-ratio: 320/640;border-radius:44px;background:#0B0918;padding:11px;box-shadow:0 34px 70px rgba(0,0,0,.45), inset 0 0 0 2px #322B52;position:relative}
   .phone:before{content:"";position:absolute;top:11px;left:50%;transform:translateX(-50%);width:110px;height:24px;background:#0B0918;border-radius:0 0 16px 16px;z-index:3}
   .phone img.shot{width:100%;height:100%;object-fit:cover;object-position:top center;border:0;border-radius:34px;background:#17142B;display:block}
+  .strip{display:flex;gap:14px;overflow-x:auto;padding:8px 2px 16px;margin-top:26px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+  .strip::-webkit-scrollbar{height:6px}
+  .strip::-webkit-scrollbar-thumb{background:#C9C2F2;border-radius:99px}
+  .strip figure{margin:0;flex:0 0 auto;scroll-snap-align:start;width:216px}
+  .strip img{width:216px;height:468px;object-fit:cover;object-position:top center;border-radius:16px;display:block;box-shadow:0 10px 26px rgba(20,12,60,.22)}
+  .strip figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
   .shots{display:flex;gap:22px;flex-wrap:wrap;margin-top:34px}
   .shot-item{display:flex;flex-direction:column;align-items:center;gap:10px}
   .shot-frame{width:230px;aspect-ratio: 320/640;border-radius:32px;background:#0B0918;padding:8px;box-shadow:0 18px 40px rgba(20,12,60,.28), inset 0 0 0 2px #322B52}
@@ -126,7 +132,7 @@
 
 <header class="site">
   <div class="wrap bar">
-    <a class="brand" href="/MathMitra-app"><img class="logo-img" src="icon.png" alt="MathMitra icon"> MathMitra <span class="beta">BETA</span></a>
+    <a class="brand" href="/MathMitra-app"><img class="logo-img" src="/MathMitra-app/icon.png" alt="MathMitra icon"> MathMitra <span class="beta">BETA</span></a>
     <nav class="links">
       <a href="#features">Features</a>
       <a href="#topics">Topics</a>
@@ -143,7 +149,7 @@
 <div class="hero">
   <div class="wrap">
     <div>
-      <span class="chip"><span class="dot"></span> Version 1.1.6 · <b style="color:#FBBF24">BETA</b> · Free · No ads</span>
+      <span class="chip"><span class="dot"></span> Version 1.1.7 · <b style="color:#FBBF24">BETA</b> · Free · No ads</span>
       <h1>Every maths formula.<br><span class="grad">One app.</span></h1>
       <p class="lede">MathMitra is a free formula app built for first-year engineering students — 291 formulas, each with its meaning, its symbols explained, and a solved example. Plus an AI Tutor that solves your doubts step by step.</p>
       <div class="cta">
@@ -158,7 +164,7 @@
       </div>
       <p style="margin-top:14px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.45);color:#FDE68A;border-radius:12px;padding:10px 14px;font-size:14px;max-width:520px"><b style="color:#FBBF24">Beta:</b> MathMitra is in public beta — we are testing it and improving it every week. Features may change; your feedback genuinely shapes what comes next.</p>
       <div class="meta">
-        <span><b>Version</b> 1.1.6 (Beta)</span>
+        <span><b>Version</b> 1.1.7 (Beta)</span>
         <span><b>Size</b> ~61 MB</span>
         <span><b>Platform</b> Android &amp; Web</span>
         <span><b>Price</b> Free</span>
@@ -167,10 +173,6 @@
         <div class="bar"><div class="fill" id="dlFill"></div></div>
         <div class="txt" id="dlText">Preparing download…</div>
       </div>
-    </div>
-    <div class="phone-col">
-      <div class="phone"><img class="shot" src="shots/home.png" alt="MathMitra home screen — formula list"></div>
-      <div class="phone-cap">The real MathMitra home screen.</div>
     </div>
   </div>
 </div>
@@ -233,19 +235,19 @@
       <h2 class="title">See it before you download it</h2>
       <p class="sub">Real screenshots from the app — more are added as the beta grows.</p>
     </div>
-    <div class="shots">
-      <div class="shot-item fade">
-        <div class="shot-frame"><img src="shots/home.png" alt="MathMitra home screen"></div>
-        <div class="shot-cap">Home — all 291 formulas, one search away</div>
-      </div>
-      <div class="shot-item fade">
-        <div class="shot-frame"><img src="shots/search.png" alt="Searching in MathMitra"></div>
-        <div class="shot-cap">Search that understands what you type</div>
-      </div>
-      <div class="shot-item fade">
-        <div class="shot-frame"><img src="shots/detail.png" alt="A formula page in MathMitra"></div>
-        <div class="shot-cap">Every formula — meaning, symbols, example</div>
-      </div>
+    <div class="strip">
+      <figure class="fade">
+        <img src="/MathMitra-app/shots/home.png" alt="MathMitra home screen">
+        <figcaption>Home — all 291 formulas, one search away</figcaption>
+      </figure>
+      <figure class="fade">
+        <img src="/MathMitra-app/shots/search.png" alt="Searching in MathMitra">
+        <figcaption>Search that understands what you type</figcaption>
+      </figure>
+      <figure class="fade">
+        <img src="/MathMitra-app/shots/detail.png" alt="A formula page in MathMitra">
+        <figcaption>Every formula — meaning, symbols, example</figcaption>
+      </figure>
     </div>
   </div>
 </section>
@@ -327,7 +329,7 @@
 <footer class="site">
   <div class="wrap">
     <div class="row">
-      <div>© 2026 Yash Sharma · MathMitra v1.1.6 · Beta</div>
+      <div>© 2026 Yash Sharma · MathMitra v1.1.7 · Beta</div>
       <div style="display:flex;gap:16px">
         <a href="https://yashx.xyz/terms">Terms &amp; Conditions</a>
         <a href="https://yashx.xyz/privacy">Privacy Policy</a>
