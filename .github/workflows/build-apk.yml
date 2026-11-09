@@ -33,8 +33,50 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Build release APK
-        run: flutter build apk --release
+      - name: Prefer Google's Maven Central mirror
+        run: |
+          mkdir -p "$HOME/.gradle/init.d"
+          cat > "$HOME/.gradle/init.d/maven-mirror.gradle" << 'GRADLE'
+          // Maven Central's own CDN redirects a few large artifacts (e.g. the
+          // Kotlin compiler) to GitHub releases, which intermittently time out
+          // (HTTP 504). Google's mirror serves the same artifacts directly.
+          def mirror = 'https://maven-central.storage-download.googleapis.com/maven2'
+          beforeSettings { settings ->
+              settings.pluginManagement {
+                  repositories {
+                      maven { url mirror }
+                  }
+              }
+              settings.dependencyResolutionManagement {
+                  repositories {
+                      maven { url mirror }
+                  }
+              }
+          }
+          allprojects {
+              buildscript {
+                  repositories {
+                      maven { url mirror }
+                  }
+              }
+              repositories {
+                  maven { url mirror }
+              }
+          }
+          GRADLE
+
+      - name: Build release APK (up to 3 attempts)
+        run: |
+          for attempt in 1 2 3; do
+            echo "Build attempt $attempt"
+            if flutter build apk --release; then
+              exit 0
+            fi
+            echo "Attempt $attempt failed; retrying in 20s"
+            sleep 20
+          done
+          echo "All build attempts failed"
+          exit 1
 
       - name: Publish APK to the apk-latest release
         uses: softprops/action-gh-release@v2
