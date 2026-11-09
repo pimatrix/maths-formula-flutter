@@ -1,5 +1,9 @@
 allprojects {
     repositories {
+        // Google's Maven Central mirror first: Maven Central's own CDN
+        // redirects some large jars (e.g. the Kotlin compiler) to GitHub
+        // releases, whose downloads intermittently time out (HTTP 504).
+        maven { url = uri("https://maven-central.storage-download.googleapis.com/maven2") }
         google()
         mavenCentral()
     }
