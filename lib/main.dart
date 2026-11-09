@@ -17,7 +17,7 @@ import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
 const String kSiteUrl = 'https://yashx.xyz/MathMitra';
-const String kAppVersion = '1.2.2';
+const String kAppVersion = '1.2.3';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -1665,6 +1665,15 @@ class _HomePageState extends State<HomePage> {
                 _open(const AdminPage());
               },
             ),
+          if (auth.isAdmin)
+            ListTile(
+              leading: const Icon(Icons.campaign_outlined),
+              title: const Text('Post a Notice'),
+              onTap: () {
+                Navigator.pop(context);
+                _open(const AdminNoticesPage());
+              },
+            ),
           const Divider(),
           if (loggedIn)
             ListTile(
@@ -2842,15 +2851,6 @@ class _MorePageState extends State<MorePage> {
             onTap: () => openLink('https://yashx.xyz/privacy'),
           ),
           const SizedBox(height: 18),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: Text(
-              'MathMitra uses analytics to understand how the app is used and to improve it. Everything that is collected is listed in the Privacy Policy, and you can opt out any time in My Profile.',
-              style: TextStyle(
-                  fontSize: 12, color: subtleColor(context), height: 1.5),
-            ),
-          ),
-          const SizedBox(height: 10),
           Center(
             child: Text(
               'Version $kAppVersion · Created by Yash Sharma',

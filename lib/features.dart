@@ -4,6 +4,7 @@
 // accounts are shared between the site and the app.
 
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -1341,6 +1342,7 @@ class _AdminPageState extends State<AdminPage> {
   bool _loading = true;
   String _error = '';
   final _limitCtrl = TextEditingController();
+  String _metric = 'pageviews';
   bool _limitBusy = false;
 
   @override
@@ -1419,14 +1421,6 @@ class _AdminPageState extends State<AdminPage> {
   Widget _graphCard() {
     final days = (_overview!['days'] as List<dynamic>?) ?? const [];
     if (days.isEmpty) return const SizedBox.shrink();
-    var maxV = 1;
-    for (final d in days) {
-      final m = d as Map<String, dynamic>;
-      final pv = (m['pageviews'] as num?)?.toInt() ?? 0;
-      final vw = (m['views'] as num?)?.toInt() ?? 0;
-      if (pv > maxV) maxV = pv;
-      if (vw > maxV) maxV = vw;
-    }
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -1439,16 +1433,32 @@ class _AdminPageState extends State<AdminPage> {
       return '$dy ${months[(mo - 1).clamp(0, 11)]}';
     }
 
-    Widget bar(int v, Color color) {
-      final h = v <= 0 ? 0.0 : (92.0 * v / maxV).clamp(2.0, 92.0);
-      return Container(
-        width: 7,
-        height: h,
-        decoration: BoxDecoration(
-            color: color, borderRadius: BorderRadius.circular(3)),
-      );
+    const metricNames = {
+      'pageviews': 'Pageviews',
+      'views': 'Formula views',
+      'visitors': 'Visitors',
+    };
+    const metricColors = {
+      'pageviews': kPrimary,
+      'views': Color(0xFF8B5CF6),
+      'visitors': Color(0xFFF59E0B),
+    };
+    final metric = _metric;
+    int val(Map m) => (m[metric] as num?)?.toInt() ?? 0;
+    var maxV = 1;
+    var total = 0;
+    var bestV = -1;
+    var bestDay = '';
+    for (final d in days) {
+      final m = d as Map<String, dynamic>;
+      final v = val(m);
+      total += v;
+      if (v > maxV) maxV = v;
+      if (v > bestV) {
+        bestV = v;
+        bestDay = label(m['date']);
+      }
     }
-
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -1457,42 +1467,48 @@ class _AdminPageState extends State<AdminPage> {
           children: [
             const Text('Analytics — last 14 days',
                 style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            Row(
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
               children: [
-                Container(
-                    width: 9,
-                    height: 9,
-                    decoration: const BoxDecoration(
-                        color: kPrimary, shape: BoxShape.circle)),
-                const SizedBox(width: 6),
-                const Text('Pageviews', style: TextStyle(fontSize: 12)),
-                const SizedBox(width: 16),
-                Container(
-                    width: 9,
-                    height: 9,
-                    decoration: const BoxDecoration(
-                        color: Color(0xFF8B5CF6), shape: BoxShape.circle)),
-                const SizedBox(width: 6),
-                const Text('Formula views', style: TextStyle(fontSize: 12)),
+                for (final k in metricNames.keys)
+                  ChoiceChip(
+                    label: Text(metricNames[k]!,
+                        style: const TextStyle(fontSize: 12)),
+                    selected: metric == k,
+                    onSelected: (_) => setState(() => _metric = k),
+                  ),
               ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Total ${metricNames[metric]!.toLowerCase()}: $total · Best day: $bestDay ($bestV)',
+              style: TextStyle(fontSize: 12.5, color: subtleColor(context)),
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 96,
+              height: 120,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   for (final d in days)
                     Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          bar((d as Map)['pageviews'] as int? ?? 0, kPrimary),
-                          const SizedBox(width: 2),
-                          bar(d['views'] as int? ?? 0,
-                              const Color(0xFF8B5CF6)),
+                          Text('${val(d as Map<String, dynamic>)}',
+                              style: const TextStyle(
+                                  fontSize: 10, fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 3),
+                          Container(
+                            width: 16,
+                            height: val(d) <= 0
+                                ? 0.0
+                                : (88.0 * val(d) / maxV).clamp(2.0, 88.0),
+                            decoration: BoxDecoration(
+                                color: metricColors[metric],
+                                borderRadius: BorderRadius.circular(4)),
+                          ),
                         ],
                       ),
                     ),
@@ -1502,13 +1518,13 @@ class _AdminPageState extends State<AdminPage> {
             const SizedBox(height: 6),
             Row(
               children: [
-                for (final e in days.asMap().entries)
+                for (final d in days)
                   Expanded(
                     child: Text(
-                      e.key % 2 == 0 ? label(e.value['date']) : '',
+                      label((d as Map)['date']),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 9.5, color: subtleColor(context)),
+                      style:
+                          TextStyle(fontSize: 8.5, color: subtleColor(context)),
                     ),
                   ),
               ],
@@ -1886,6 +1902,13 @@ class _AdminPageState extends State<AdminPage> {
               sub: 'Send a notice or an app-update message to all users',
               onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => const AdminNoticesPage())),
+            ),
+            _tile(
+              icon: Icons.storage_outlined,
+              title: 'Analytics Data',
+              sub: 'See how full the database is; delete old analytics',
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => const ManageAnalyticsPage())),
             ),
           ],
         ),
@@ -2323,6 +2346,115 @@ class EventListPage extends StatelessWidget {
 }
 
 /// Top lists + recent additions, behind the Insights tile.
+
+class PieSliceData {
+  final String label;
+  final int value;
+  const PieSliceData(this.label, this.value);
+}
+
+/// Top [max] entries of an overview "top" list ({name, count}), with the
+/// rest folded into one "Others" slice.
+List<PieSliceData> pieSlices(List<dynamic>? items, {int max = 5}) {
+  final all = <PieSliceData>[];
+  for (final it in (items ?? const [])) {
+    final m = it as Map;
+    final c = (m['count'] as num?)?.toInt() ?? 0;
+    if (c > 0) all.add(PieSliceData((m['name'] ?? 'Unknown').toString(), c));
+  }
+  if (all.length <= max) return all;
+  final head = all.sublist(0, max);
+  final rest = all.sublist(max).fold<int>(0, (a, b) => a + b.value);
+  if (rest > 0) head.add(PieSliceData('Others', rest));
+  return head;
+}
+
+const List<Color> pieColors = [
+  kPrimary,
+  Color(0xFF8B5CF6),
+  Color(0xFFF59E0B),
+  Color(0xFF10B981),
+  Color(0xFFEF4444),
+  Color(0xFF64748B),
+];
+
+class PieChart extends StatelessWidget {
+  final List<PieSliceData> slices;
+  const PieChart({super.key, required this.slices});
+
+  @override
+  Widget build(BuildContext context) {
+    final total = slices.fold<int>(0, (a, b) => a + b.value);
+    if (total <= 0) return const SizedBox.shrink();
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 128,
+          height: 128,
+          child: CustomPaint(painter: _PiePainter(slices)),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < slices.length; i++)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(
+                    children: [
+                      Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                              color: pieColors[i % pieColors.length],
+                              borderRadius: BorderRadius.circular(2))),
+                      const SizedBox(width: 7),
+                      Expanded(
+                          child: Text(slices[i].label,
+                              style: const TextStyle(fontSize: 12.5),
+                              overflow: TextOverflow.ellipsis)),
+                      Text(
+                          '${slices[i].value} · ${(100 * slices[i].value / total).toStringAsFixed(0)}%',
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PiePainter extends CustomPainter {
+  final List<PieSliceData> slices;
+  _PiePainter(this.slices);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final total = slices.fold<int>(0, (a, b) => a + b.value);
+    if (total <= 0) return;
+    final rect = Offset.zero & size;
+    var start = -math.pi / 2;
+    for (var i = 0; i < slices.length; i++) {
+      final sweep = 2 * math.pi * slices[i].value / total;
+      final paint = Paint()
+        ..color = pieColors[i % pieColors.length]
+        ..style = PaintingStyle.fill;
+      canvas.drawArc(rect, start, sweep - 0.02, true, paint);
+      start += sweep;
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PiePainter old) => old.slices != slices;
+}
+
+
 class InsightsPage extends StatelessWidget {
   final Map<String, dynamic> overview;
   const InsightsPage({super.key, required this.overview});
@@ -2357,6 +2489,24 @@ class InsightsPage extends StatelessWidget {
     );
   }
 
+  Widget _pie(String title, List<dynamic>? items) {
+    final slices = pieSlices(items);
+    if (slices.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          PieChart(slices: slices),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final recent = (overview['recentActivity'] as List<dynamic>?) ?? const [];
@@ -2369,17 +2519,12 @@ class InsightsPage extends StatelessWidget {
               overview['topFormulas'] as List<dynamic>?, context),
           _top('Most favourited formulas',
               overview['topFavorited'] as List<dynamic>?, context),
-          _top('Top categories', overview['topCategories'] as List<dynamic>?,
-              context),
-          _top('Top countries', overview['topCountries'] as List<dynamic>?,
-              context),
-          _top('Top devices', overview['topDevices'] as List<dynamic>?, context),
-          _top('Top operating systems', overview['topOS'] as List<dynamic>?,
-              context),
-          _top('Top browsers', overview['topBrowsers'] as List<dynamic>?,
-              context),
-          _top('Top referrers', overview['topReferrers'] as List<dynamic>?,
-              context),
+          _pie('Top categories — share', overview['topCategories'] as List<dynamic>?),
+          _pie('Top countries — share', overview['topCountries'] as List<dynamic>?),
+          _pie('Top devices — share', overview['topDevices'] as List<dynamic>?),
+          _pie('Top operating systems — share', overview['topOS'] as List<dynamic>?),
+          _pie('Top browsers — share', overview['topBrowsers'] as List<dynamic>?),
+          _pie('Top referrers — share', overview['topReferrers'] as List<dynamic>?),
           const Text('Recent additions',
               style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
@@ -3327,6 +3472,404 @@ class SavedSolutionsPage extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+// ------------------------------------------------- analytics data admin
+// Storage usage + guarded deletion of analytics rows. The server
+// protects the 'notice' and 'ai_limit' settings rows, so nothing here
+// can break broadcasts or the AI limit.
+
+class ManageAnalyticsPage extends StatefulWidget {
+  const ManageAnalyticsPage({super.key});
+
+  @override
+  State<ManageAnalyticsPage> createState() => _ManageAnalyticsPageState();
+}
+
+class _ManageAnalyticsPageState extends State<ManageAnalyticsPage> {
+  Map<String, dynamic>? _data;
+  bool _loading = true;
+  bool _busy = false;
+  String _error = '';
+  final Set<String> _selected = {};
+
+  static const _typeNames = {
+    'pageview': 'Page views',
+    'presence': 'Presence signals',
+    'formula_view': 'Formula views',
+    'share': 'Shares',
+    'favorite_add': 'Favourite adds',
+    'favorite_remove': 'Favourite removes',
+    'folder_create': 'Folder creates',
+    'folder_add': 'Folder adds',
+    'ai_question': 'AI Tutor questions',
+    'signup': 'Sign-ups',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = '';
+    });
+    try {
+      final r = await auth.api('/api/admin/events');
+      final d = jsonDecode(r.body) as Map<String, dynamic>;
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        if (r.statusCode == 200) {
+          _data = d;
+        } else {
+          _error = (d['error'] ?? 'Could not load the data summary.')
+              .toString();
+        }
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = 'Network error — please try again.';
+        });
+      }
+    }
+  }
+
+  String _bytes(num b) {
+    if (b < 1024) return '${b.toInt()} B';
+    if (b < 1024 * 1024) return '${(b / 1024).toStringAsFixed(1)} KB';
+    if (b < 1024 * 1024 * 1024) {
+      return '${(b / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+    return '${(b / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
+  }
+
+  Future<void> _delete(Map<String, dynamic> body, String what) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete data?'),
+        content: Text(
+            'This will permanently delete $what. This cannot be undone. Notices and app settings are protected and will not be touched.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    setState(() => _busy = true);
+    try {
+      final r =
+          await auth.api('/api/admin/events', method: 'DELETE', body: body);
+      final d = jsonDecode(r.body) as Map<String, dynamic>;
+      if (!mounted) return;
+      setState(() => _busy = false);
+      if (r.statusCode == 200) {
+        _selected.clear();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Deleted ${d['deleted'] ?? 0} rows.')));
+        _load();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                (d['error'] ?? 'The delete failed.').toString())));
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _busy = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Network error — try again.')));
+      }
+    }
+  }
+
+  Widget _usageCard() {
+    final d = _data!;
+    final limits = (d['limits'] as Map?) ?? const {};
+    final dbMax = (limits['dbBytes'] as num?)?.toDouble() ?? 1;
+    final stMax = (limits['storageBytes'] as num?)?.toDouble() ?? 1;
+    final evBytes = (d['eventsEstBytes'] as num?)?.toDouble() ?? 0;
+    final storage = (d['storage'] as Map?) ?? const {};
+    final stBytes = (storage['bytes'] as num?)?.toDouble() ?? 0;
+    final tables = (d['tables'] as Map?) ?? const {};
+    Widget bar(String label, double used, double max, String detail) {
+      final pct = max <= 0 ? 0.0 : (used / max).clamp(0.0, 1.0);
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Expanded(
+                  child: Text(label,
+                      style: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w600))),
+              Text('${(pct * 100).toStringAsFixed(pct < 0.01 ? 2 : 1)}%',
+                  style: const TextStyle(
+                      fontSize: 12.5, fontWeight: FontWeight.w700)),
+            ]),
+            const SizedBox(height: 5),
+            LinearProgressIndicator(
+                value: pct, minHeight: 8, color: kPrimary),
+            const SizedBox(height: 4),
+            Text(detail,
+                style:
+                    TextStyle(fontSize: 12, color: subtleColor(context))),
+          ],
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Supabase usage',
+                style:
+                    TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
+            Text('Your project is on the free plan.',
+                style:
+                    TextStyle(fontSize: 12, color: subtleColor(context))),
+            const SizedBox(height: 12),
+            bar('Analytics data in the database', evBytes, dbMax,
+                'About ${_bytes(evBytes)} of ${_bytes(dbMax)} — an estimate from the stored rows (${d['total'] ?? 0} analytics rows).'),
+            bar('Uploaded files (syllabus)', stBytes, stMax,
+                '${_bytes(stBytes)} of ${_bytes(stMax)} · ${storage['files'] ?? 0} files — measured exactly.'),
+            const Divider(),
+            Text(
+              'Rows — Formulas: ${tables['fs_formulas'] ?? 0} · Topics: ${tables['fs_categories'] ?? 0} · Syllabus: ${tables['fs_syllabus'] ?? 0} · Users: ${tables['profiles'] ?? 0} · All events: ${tables['fs_events'] ?? 0}',
+              style: const TextStyle(fontSize: 12.5, height: 1.5),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: featureBar('Analytics Data'),
+      body: _loading
+          ? const Center(child: MathLoader())
+          : _error.isNotEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(_error, textAlign: TextAlign.center),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                            onPressed: _load, child: const Text('Retry')),
+                      ],
+                    ),
+                  ),
+                )
+              : ListView(
+                  padding: const EdgeInsets.all(14),
+                  children: [
+                    _usageCard(),
+                    const SizedBox(height: 6),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Delete by type',
+                                style: TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 4),
+                            Text(
+                                'Presence signals are usually the biggest pile — they are only "who is online" heartbeats.',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: subtleColor(context))),
+                            for (final e in ((_data!['byType'] as Map?) ??
+                                    const {})
+                                .entries
+                                .toList()
+                              ..sort((a, b) => (b.value as num)
+                                  .compareTo(a.value as num)))
+                              ListTile(
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                                title: Text(
+                                    _typeNames[e.key] ?? e.key.toString(),
+                                    style: const TextStyle(fontSize: 13.5)),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('${e.value}',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w700)),
+                                    IconButton(
+                                      icon: const Icon(
+                                          Icons.delete_outline, size: 20),
+                                      tooltip: 'Delete all of this type',
+                                      onPressed: _busy
+                                          ? null
+                                          : () => _delete(
+                                              {'mode': 'type', 'type': e.key},
+                                              'all ${e.value} ${_typeNames[e.key] ?? e.key} rows'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Delete by age',
+                                style: TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              children: [
+                                for (final days in [7, 30, 90])
+                                  ActionChip(
+                                    label: Text('Older than $days days'),
+                                    onPressed: _busy
+                                        ? null
+                                        : () => _delete(
+                                            {'mode': 'older', 'days': days},
+                                            'all analytics rows older than $days days'),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Select & delete',
+                                style: TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 4),
+                            Text('The 100 most recent analytics rows.',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: subtleColor(context))),
+                            for (final e in ((_data!['recent']
+                                    as List<dynamic>?) ??
+                                const []))
+                              CheckboxListTile(
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                                value: _selected
+                                    .contains((e as Map)['id'].toString()),
+                                onChanged: (v) => setState(() {
+                                  final id = e['id'].toString();
+                                  if (v == true) {
+                                    _selected.add(id);
+                                  } else {
+                                    _selected.remove(id);
+                                  }
+                                }),
+                                title: Text(
+                                  '${_typeNames[e['type']] ?? e['type']}${(e['formula_name'] ?? '').toString().isNotEmpty ? ' · ${e['formula_name']}' : ''}',
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                                subtitle: Text(
+                                  '${fmtIst((e['created_at'] ?? '').toString())}${(e['user_email'] ?? '').toString().isNotEmpty ? ' · ${e['user_email']}' : ''}',
+                                  style: const TextStyle(fontSize: 11.5),
+                                ),
+                              ),
+                            FilledButton.icon(
+                              style: FilledButton.styleFrom(
+                                  backgroundColor: kPrimary),
+                              onPressed: _busy || _selected.isEmpty
+                                  ? null
+                                  : () => _delete(
+                                      {
+                                        'mode': 'ids',
+                                        'ids': _selected.toList()
+                                      },
+                                      'the ${_selected.length} selected rows'),
+                              icon: const Icon(Icons.delete_outline, size: 18),
+                              label:
+                                  Text('Delete selected (${_selected.length})'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Card(
+                      color: const Color(0xFFFDF0EF),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Danger zone',
+                                style: TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFB3261E))),
+                            const SizedBox(height: 6),
+                            Text(
+                                'Delete ALL ${_data!['total'] ?? 0} analytics rows at once. Totals, graphs and visitor history will start again from zero. Notices, users, formulas and settings stay safe.',
+                                style: const TextStyle(
+                                    fontSize: 12.5, height: 1.45)),
+                            const SizedBox(height: 10),
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFFB3261E),
+                                  side: const BorderSide(
+                                      color: Color(0xFFB3261E))),
+                              onPressed: _busy
+                                  ? null
+                                  : () => _delete(
+                                      {'mode': 'all', 'confirm': 'CLEAR ALL'},
+                                      'ALL analytics data'),
+                              icon: const Icon(Icons.warning_amber_outlined,
+                                  size: 18),
+                              label: const Text('Clear all analytics'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
     );
   }
 }

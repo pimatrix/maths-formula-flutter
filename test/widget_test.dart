@@ -180,8 +180,26 @@ void main() {
     expect(n.isUpdate, isTrue);
     expect(n.version, '1.2.1');
   });
+  test('pie slices fold the tail into Others', () {
+    final items = [
+      {'name': 'A', 'count': 50},
+      {'name': 'B', 'count': 30},
+      {'name': 'C', 'count': 10},
+      {'name': 'D', 'count': 5},
+      {'name': 'E', 'count': 3},
+      {'name': 'F', 'count': 2},
+    ];
+    final slices = pieSlices(items);
+    expect(slices.length, 6);
+    expect(slices.last.label, 'Others');
+    expect(slices.last.value, 2);
+    expect(pieSlices(const []).isEmpty, isTrue);
+    expect(pieSlices([
+      {'name': 'X', 'count': 0}
+    ]).isEmpty, isTrue);
+  });
 
-  test('saved solutions round-trip through the library JSON', () async {
+test('saved solutions round-trip through the library JSON', () async {
     SharedPreferences.setMockInitialValues({});
     final lib2 = LibraryService();
     lib2.applyJson({
