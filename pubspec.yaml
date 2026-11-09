@@ -1,7 +1,7 @@
 name: maths_formula_sheet
 description: MathMitra — Maths formulas with meaning, symbols and solved examples.
 publish_to: "none"
-version: 1.1.4+6
+version: 1.1.5+7
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -28,6 +28,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/formulas-seed.json
+    - assets/icon.png
     - assets/formula-details.json
     - assets/fonts/DejaVuSans.ttf
     - assets/fonts/Inter-400.ttf

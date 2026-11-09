@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MathMitra — Maths Formula App | Download for Android &amp; Web</title>
 <meta name="description" content="MathMitra is a free maths formula app for engineering students: 291 formulas with meanings, symbols and solved examples, an AI Tutor, photo scan and a one-tap PDF of the whole book. Download the Android app or open it on the web.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234338CA'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='Georgia,serif' font-weight='bold'%3E%CE%A3%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="icon.png">
+<!-- (replaced svg favicon) <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234338CA'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='Georgia,serif' font-weight='bold'%3E%CE%A3%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -26,7 +27,8 @@
   header.site{position:sticky;top:0;z-index:50;background:rgba(251,250,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
   .bar{display:flex;align-items:center;gap:14px;height:62px}
   .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:'Space Grotesk';font-weight:700;font-size:19px}
-  .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--indigo),var(--violet));display:flex;align-items:center;justify-content:center;color:#fff;font-family:Georgia,serif;font-weight:bold;font-size:19px;box-shadow:0 4px 14px rgba(67,56,202,.35)}
+  .logo-img{width:36px;height:36px;border-radius:10px;box-shadow:0 4px 14px rgba(10,20,60,.35)}
+  .beta{background:#F59E0B;color:#231400;font-size:11px;font-weight:800;letter-spacing:.09em;padding:3px 9px;border-radius:999px;vertical-align:middle}
   nav.links{margin-left:auto;display:flex;gap:22px;align-items:center}
   nav.links a:not(.btn){color:var(--muted);text-decoration:none;font-size:14px;font-weight:500}
   nav.links a:not(.btn):hover{color:var(--indigo)}
@@ -116,7 +118,7 @@
 
 <header class="site">
   <div class="wrap bar">
-    <a class="brand" href="/MathMitra-app"><span class="logo">Σ</span> MathMitra</a>
+    <a class="brand" href="/MathMitra-app"><img class="logo-img" src="icon.png" alt="MathMitra icon"> MathMitra <span class="beta">BETA</span></a>
     <nav class="links">
       <a href="#features">Features</a>
       <a href="#topics">Topics</a>
@@ -133,7 +135,7 @@
 <div class="hero">
   <div class="wrap">
     <div>
-      <span class="chip"><span class="dot"></span> Version 1.1.4 · Free · No ads</span>
+      <span class="chip"><span class="dot"></span> Version 1.1.5 · <b style="color:#FBBF24">BETA</b> · Free · No ads</span>
       <h1>Every maths formula.<br><span class="grad">One app.</span></h1>
       <p class="lede">MathMitra is a free formula app built for first-year engineering students — 291 formulas, each with its meaning, its symbols explained, and a solved example. Plus an AI Tutor that solves your doubts step by step.</p>
       <div class="cta">
@@ -146,8 +148,9 @@
           Open the Web App
         </a>
       </div>
+      <p style="margin-top:14px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.45);color:#FDE68A;border-radius:12px;padding:10px 14px;font-size:14px;max-width:520px"><b style="color:#FBBF24">Beta:</b> MathMitra is in public beta — we are testing it and improving it every week. Features may change; your feedback genuinely shapes what comes next.</p>
       <div class="meta">
-        <span><b>Version</b> 1.1.4</span>
+        <span><b>Version</b> 1.1.5 (Beta)</span>
         <span><b>Size</b> ~61 MB</span>
         <span><b>Platform</b> Android &amp; Web</span>
         <span><b>Price</b> Free</span>
@@ -288,7 +291,7 @@
 <footer class="site">
   <div class="wrap">
     <div class="row">
-      <div>© 2026 Yash Sharma · MathMitra v1.1.4</div>
+      <div>© 2026 Yash Sharma · MathMitra v1.1.5 · Beta</div>
       <div style="display:flex;gap:16px">
         <a href="https://yashx.xyz/terms">Terms &amp; Conditions</a>
         <a href="https://yashx.xyz/privacy">Privacy Policy</a>

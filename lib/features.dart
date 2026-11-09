@@ -1257,7 +1257,7 @@ class _MyFormulasPageState extends State<MyFormulasPage> {
     return Scaffold(
       appBar: featureBar(auth.isAdmin ? 'All Added Formulas' : 'My Formulas'),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const MathLoader()
           : _mine.isEmpty
               ? Center(
                   child: Padding(
@@ -1369,17 +1369,28 @@ class _AdminPageState extends State<AdminPage> {
                 as List<dynamic>? ??
             [];
       }
-      final r3 = await auth.api('/api/admin/ai-limit');
-      if (r3.statusCode == 200) {
-        final d3 = jsonDecode(r3.body) as Map<String, dynamic>;
-        if (d3['limit'] is num) {
-          _limitCtrl.text = (d3['limit'] as num).toInt().toString();
-        }
-      }
+      // The AI-limit value loads on its own afterwards (see _loadLimit):
+      // it must never hold up or fail the dashboard itself.
     } catch (_) {
       setState(() => _error = 'Network error.');
     }
     if (mounted) setState(() => _loading = false);
+    _loadLimit();
+  }
+
+  Future<void> _loadLimit() async {
+    try {
+      final r3 = await auth.api('/api/admin/ai-limit');
+      if (!mounted || r3.statusCode != 200) return;
+      final d3 = jsonDecode(r3.body) as Map<String, dynamic>;
+      if (d3['limit'] is num) {
+        setState(
+            () => _limitCtrl.text = (d3['limit'] as num).toInt().toString());
+      }
+    } catch (_) {
+      // The limit field simply stays at its default — the dashboard
+      // itself is unaffected.
+    }
   }
 
   Future<void> _saveLimit() async {
@@ -1623,8 +1634,7 @@ class _AdminPageState extends State<AdminPage> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-          appBar: featureBar('Admin Dashboard'),
-          body: const Center(child: CircularProgressIndicator()));
+          appBar: featureBar('Admin Dashboard'), body: const MathLoader());
     }
     if (_error.isNotEmpty || _overview == null) {
       return Scaffold(

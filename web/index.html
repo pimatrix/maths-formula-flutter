@@ -42,19 +42,24 @@
     }
     #splash .logo { color: #fff; font-size: 34px; font-weight: 700; letter-spacing: .5px; }
     #splash .sub { color: rgba(255,255,255,.75); font-size: 14px; margin-top: -10px; }
-    #splash .spin {
-      width: 42px; height: 42px; border-radius: 50%;
-      border: 4px solid rgba(255,255,255,.25); border-top-color: #fff;
-      animation: mmspin 0.9s linear infinite;
+    #splash .icon { width: 92px; height: 92px; border-radius: 22px; box-shadow: 0 14px 34px rgba(0,0,0,.35); }
+    #splash .syms { display: flex; gap: 15px; margin-top: 4px; }
+    #splash .syms span {
+      font-family: Georgia, 'Times New Roman', serif; font-size: 30px; font-weight: 700;
+      color: #E7E3FF; display: inline-block; animation: mmbounce 1.3s ease-in-out infinite;
     }
-    @keyframes mmspin { to { transform: rotate(360deg); } }
+    @keyframes mmbounce {
+      0%, 100% { transform: translateY(0); opacity: .4; }
+      50% { transform: translateY(-11px); opacity: 1; }
+    }
   </style>
 </head>
 <body>
   <div id="splash">
+    <img class="icon" src="icons/Icon-192.png" alt="MathMitra">
     <div class="logo">MathMitra</div>
     <div class="sub">Maths Formula Book</div>
-    <div class="spin"></div>
+    <div class="syms"><span style="animation-delay:0s">&#8747;</span><span style="animation-delay:.13s">&#960;</span><span style="animation-delay:.26s">&#8730;</span><span style="animation-delay:.39s">&#8721;</span><span style="animation-delay:.52s">&#8734;</span><span style="animation-delay:.65s">x&#178;</span></div>
   </div>
   <script>
     window.addEventListener('flutter-first-frame', function () {

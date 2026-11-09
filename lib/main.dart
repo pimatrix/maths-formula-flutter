@@ -17,7 +17,7 @@ import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
 const String kSiteUrl = 'https://yashx.xyz/MathMitra';
-const String kAppVersion = '1.1.2';
+const String kAppVersion = '1.1.5';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -70,6 +70,92 @@ Color inkColor(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark
         ? const Color(0xFFE7E3FF)
         : const Color(0xFF1E1B4B);
+
+/// Maths-themed loading animation — bouncing symbols (∫ π √ Σ ∞ x²)
+/// instead of the classic spinner, for full-screen loading states.
+class MathLoader extends StatefulWidget {
+  final String label;
+  final bool showIcon;
+  const MathLoader(
+      {super.key, this.label = 'Loading MathMitra…', this.showIcon = false});
+
+  @override
+  State<MathLoader> createState() => _MathLoaderState();
+}
+
+class _MathLoaderState extends State<MathLoader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctl = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 1300))
+    ..repeat();
+
+  @override
+  void dispose() {
+    _ctl.dispose();
+    super.dispose();
+  }
+
+  static const _symbols = ['∫', 'π', '√', 'Σ', '∞', 'x²'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.showIcon) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset('assets/icon.png', width: 86, height: 86),
+            ),
+            const SizedBox(height: 18),
+          ],
+          AnimatedBuilder(
+            animation: _ctl,
+            builder: (context, _) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < _symbols.length; i++)
+                  _symbol(i),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(widget.label,
+              style: TextStyle(fontSize: 13.5, color: subtleColor(context))),
+        ],
+      ),
+    );
+  }
+
+  Widget _symbol(int i) {
+    final local = (_ctl.value - i / _symbols.length) % 1.0;
+    final bounce = local <= 0 ? 0.0 : (local >= 1 ? 0.0 : _hump(local));
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 5),
+      child: Transform.translate(
+        offset: Offset(0, -10 * bounce),
+        child: Opacity(
+          opacity: 0.35 + 0.65 * bounce,
+          child: Text(
+            _symbols[i],
+            style: TextStyle(
+              fontFamily: kDisplayFont,
+              fontSize: 29,
+              fontWeight: FontWeight.w700,
+              color: i.isEven ? kPrimary : const Color(0xFF8B5CF6),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  double _hump(double t) {
+    // smooth 0 -> 1 -> 0 over t in [0,1]
+    return (1 - (2 * t - 1).abs());
+  }
+}
 
 /// Formula ink: dark indigo on light surfaces, light lavender on dark.
 Color formulaInk(BuildContext context) =>
@@ -1147,7 +1233,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       drawer: _drawer(),
       body: data == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const MathLoader(showIcon: true)
           : CustomScrollView(
               controller: _scrollCtrl,
               slivers: [
@@ -1974,7 +2060,7 @@ class _BrowsePageState extends State<BrowsePage> {
         title: const Text('Browse by Topic'),
       ),
       body: data == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const MathLoader()
           : ListView(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 20),
               children: [
