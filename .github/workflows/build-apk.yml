@@ -1,3 +1,4 @@
+# Builds the release APK and publishes it to the apk-latest GitHub release.
 name: Build MathMitra APK
 
 on:
