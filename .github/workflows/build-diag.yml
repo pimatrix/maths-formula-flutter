@@ -1,0 +1,121 @@
+name: Build diagnostic APKs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'diag/BUILD_DEBUG'
+      - 'diag_counter/**'
+      - '.github/workflows/build-diag.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  debug-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter (stable)
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+
+      - name: Prefer Google's Maven Central mirror
+        run: |
+          mkdir -p "$HOME/.gradle/init.d"
+          cat > "$HOME/.gradle/init.d/maven-mirror.gradle" << 'GRADLE'
+          def mirror = 'https://maven-central.storage-download.googleapis.com/maven2'
+          beforeSettings { settings ->
+              settings.dependencyResolutionManagement {
+                  repositories {
+                      maven { url mirror }
+                  }
+              }
+          }
+          GRADLE
+
+      - name: Build MathMitra DEBUG apk (up to 3 attempts)
+        run: |
+          for attempt in 1 2 3; do
+            echo "Build attempt $attempt"
+            if flutter build apk --debug; then
+              exit 0
+            fi
+            echo "Attempt $attempt failed; retrying in 20s"
+            sleep 20
+          done
+          echo "All build attempts failed"
+          exit 1
+
+      - name: Publish debug APK to the apk-debug release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-debug
+          name: MathMitra DEBUG (diagnostic)
+          files: build/app/outputs/flutter-apk/app-debug.apk
+
+  counter-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter (stable)
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+
+      - name: Prefer Google's Maven Central mirror
+        run: |
+          mkdir -p "$HOME/.gradle/init.d"
+          cat > "$HOME/.gradle/init.d/maven-mirror.gradle" << 'GRADLE'
+          def mirror = 'https://maven-central.storage-download.googleapis.com/maven2'
+          beforeSettings { settings ->
+              settings.dependencyResolutionManagement {
+                  repositories {
+                      maven { url mirror }
+                  }
+              }
+          }
+          GRADLE
+
+      - name: Build counter app release apk (up to 3 attempts)
+        working-directory: diag_counter
+        run: |
+          for attempt in 1 2 3; do
+            echo "Build attempt $attempt"
+            if flutter build apk --release; then
+              exit 0
+            fi
+            echo "Attempt $attempt failed; retrying in 20s"
+            sleep 20
+          done
+          echo "All build attempts failed"
+          exit 1
+
+      - name: Publish counter APK to the apk-diag release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-diag
+          name: DiagCounter (diagnostic)
+          files: diag_counter/build/app/outputs/flutter-apk/app-release.apk
