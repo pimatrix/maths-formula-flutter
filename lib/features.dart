@@ -2143,6 +2143,9 @@ class _VisitorDetailPageState extends State<VisitorDetailPage> {
                                 'First seen ${vWhen((_info ?? v)['first_seen'])}',
                                 'Last seen ${vWhen((_info ?? v)['last_seen'])}',
                                 '${(_info ?? v)['total'] ?? _events.length} actions in total',
+                                if (((_info ?? v)['presence_signals'] as num? ?? 0) >
+                                    0)
+                                  'Stayed active ≈ ${(_info ?? v)['presence_signals']} min (presence signals)',
                               ].join('\n'),
                               style: TextStyle(
                                   fontSize: 13,

@@ -17,7 +17,7 @@ import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
 const String kSiteUrl = 'https://yashx.xyz/MathMitra';
-const String kAppVersion = '1.1.7';
+const String kAppVersion = '1.1.8';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -1444,6 +1444,12 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child:
+                      Image.asset('assets/icon.png', width: 46, height: 46),
+                ),
+                const SizedBox(height: 10),
                 const Text('MathMitra',
                     style: TextStyle(
                         color: Colors.white,
@@ -2463,6 +2469,12 @@ class _MorePageState extends State<MorePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child:
+                      Image.asset('assets/icon.png', width: 46, height: 46),
+                ),
+                const SizedBox(height: 10),
                 const Text('MathMitra',
                     style: TextStyle(
                         color: Colors.white,
