@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show Clipboard, ClipboardData, rootBundle;
@@ -2132,16 +2133,19 @@ class _MorePageState extends State<MorePage> {
   }
 
   Future<void> _makePdf() async {
+    if (_pdfBusy) return;
     setState(() => _pdfBusy = true);
+    showMsg(context, 'Preparing your PDF — this can take a few seconds\u2026');
     try {
       final data = _data ?? await _svc.loadBundled();
       // The PDF libraries load on demand, keeping the first app load light.
       await pdf_export.loadLibrary();
       await pdf_export.exportAllFormulasPdf(data, _details);
-    } catch (_) {
-      if (mounted) {
-        showMsg(context, 'Could not create the PDF. Please try again.');
+      if (mounted && kIsWeb) {
+        showMsg(context, 'PDF downloaded — check your downloads.');
       }
+    } catch (e) {
+      if (mounted) showMsg(context, 'PDF error: $e');
     }
     if (mounted) setState(() => _pdfBusy = false);
   }
