@@ -164,4 +164,21 @@ void main() {
     expect(lib.isFavorite('seed-1'), isFalse);
   });
 
+  test('isNewerVersion compares dotted versions numerically', () {
+    expect(isNewerVersion('1.2.1', '1.2.0'), isTrue);
+    expect(isNewerVersion('1.3.0', '1.2.1'), isTrue);
+    expect(isNewerVersion('1.2.0', '1.2.0'), isFalse);
+    expect(isNewerVersion('1.1.10', '1.2.0'), isFalse);
+    expect(isNewerVersion('2.0', '1.9.9'), isTrue);
+  });
+
+  test('AppNotice parses the server payload', () {
+    final n = AppNotice.fromJson(const {
+      'id': 'x1', 'title': 'Hello', 'body': 'Msg', 'kind': 'update',
+      'version': '1.2.1', 'created_at': '2026-11-09T00:00:00Z',
+    });
+    expect(n.isUpdate, isTrue);
+    expect(n.version, '1.2.1');
+  });
+
 }

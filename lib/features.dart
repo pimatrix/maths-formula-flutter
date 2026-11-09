@@ -1880,6 +1880,13 @@ class _AdminPageState extends State<AdminPage> {
               onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => InsightsPage(overview: _overview!))),
             ),
+            _tile(
+              icon: Icons.campaign_outlined,
+              title: 'Broadcast & Updates',
+              sub: 'Send a notice or an app-update message to all users',
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => const AdminNoticesPage())),
+            ),
           ],
         ),
       ),
@@ -2828,6 +2835,371 @@ class _FolderEntriesPageState extends State<FolderEntriesPage> {
             },
           );
         },
+      ),
+    );
+  }
+}
+
+// ------------------------------------------------------------- notices
+// Admin broadcasts + app-update announcements. The server keeps them
+// as notice rows; the app fetches them on start, pops up anything new
+// (update notices only when their version is newer than this build),
+// and keeps the full list under More -> Notices.
+
+bool isNewerVersion(String a, String b) {
+  List<int> parts(String v) => v
+      .split('.')
+      .map((x) => int.tryParse(x.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0)
+      .toList();
+  final pa = parts(a), pb = parts(b);
+  for (var i = 0; i < 3; i++) {
+    final x = i < pa.length ? pa[i] : 0;
+    final y = i < pb.length ? pb[i] : 0;
+    if (x != y) return x > y;
+  }
+  return false;
+}
+
+class AppNotice {
+  final String id, title, body, kind, version, createdAt;
+  const AppNotice(
+      {required this.id,
+      required this.title,
+      required this.body,
+      required this.kind,
+      required this.version,
+      required this.createdAt});
+
+  factory AppNotice.fromJson(Map<String, dynamic> j) => AppNotice(
+        id: (j['id'] ?? '').toString(),
+        title: (j['title'] ?? '').toString(),
+        body: (j['body'] ?? '').toString(),
+        kind: (j['kind'] ?? 'broadcast').toString(),
+        version: (j['version'] ?? '').toString(),
+        createdAt: (j['created_at'] ?? '').toString(),
+      );
+
+  bool get isUpdate => kind == 'update';
+}
+
+class NoticesService extends ChangeNotifier {
+  List<AppNotice> notices = [];
+  Set<String> seen = {};
+  static const String _seenKey = 'mm_seen_notices_v1';
+
+  int get unread => notices.where((n) => !seen.contains(n.id)).length;
+
+  List<AppNotice> get popupWorthy => notices
+      .where((n) =>
+          !seen.contains(n.id) &&
+          (!n.isUpdate || isNewerVersion(n.version, kAppVersion)))
+      .toList();
+
+  Future<void> init() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      seen = (prefs.getStringList(_seenKey) ?? []).toSet();
+    } catch (_) {}
+    await fetch();
+  }
+
+  Future<void> fetch() async {
+    try {
+      final r = await http.get(Uri.parse('$kApiBase/api/notices'));
+      if (r.statusCode == 200) {
+        final d = jsonDecode(r.body) as Map<String, dynamic>;
+        notices = ((d['notices'] as List?) ?? [])
+            .map((e) =>
+                AppNotice.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
+
+  Future<void> markSeen(Iterable<String> ids) async {
+    seen.addAll(ids);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_seenKey, seen.toList());
+    } catch (_) {}
+    notifyListeners();
+  }
+}
+
+final NoticesService noticesSvc = NoticesService();
+
+Future<void> maybeShowNoticePopups(BuildContext context) async {
+  for (final n in noticesSvc.popupWorthy) {
+    if (!context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: Icon(n.isUpdate
+            ? Icons.system_update_outlined
+            : Icons.campaign_outlined),
+        title: Text(n.isUpdate ? 'Update available — v${n.version}' : n.title),
+        content: Text(n.isUpdate ? '${n.title}\n\n${n.body}' : n.body),
+        actions: [
+          if (n.isUpdate)
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Later')),
+          if (n.isUpdate)
+            FilledButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  launchUrl(Uri.parse('https://yashx.xyz/MathMitra-app'),
+                      mode: LaunchMode.externalApplication);
+                },
+                child: const Text('Update now')),
+          if (!n.isUpdate)
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('OK')),
+        ],
+      ),
+    );
+    await noticesSvc.markSeen([n.id]);
+  }
+}
+
+class NoticesPage extends StatefulWidget {
+  const NoticesPage({super.key});
+  @override
+  State<NoticesPage> createState() => _NoticesPageState();
+}
+
+class _NoticesPageState extends State<NoticesPage> {
+  @override
+  void initState() {
+    super.initState();
+    noticesSvc.fetch().then((_) {
+      if (mounted) {
+        noticesSvc.markSeen(noticesSvc.notices.map((n) => n.id));
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: featureBar('Notices'),
+      body: ListenableBuilder(
+        listenable: noticesSvc,
+        builder: (context, _) {
+          if (noticesSvc.notices.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Text('No notices yet.',
+                    style:
+                        TextStyle(color: subtleColor(context), fontSize: 14)),
+              ),
+            );
+          }
+          return ListView.separated(
+            itemCount: noticesSvc.notices.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (context, i) {
+              final n = noticesSvc.notices[i];
+              return ListTile(
+                leading: Icon(
+                    n.isUpdate
+                        ? Icons.system_update_outlined
+                        : Icons.campaign_outlined,
+                    color: kPrimary),
+                title: Text(n.title),
+                subtitle: Text(
+                    '${n.isUpdate ? 'App update · v${n.version}' : 'Announcement'} · ${fmtIst(n.createdAt)}\n${n.body}'),
+                isThreeLine: true,
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class AdminNoticesPage extends StatefulWidget {
+  const AdminNoticesPage({super.key});
+  @override
+  State<AdminNoticesPage> createState() => _AdminNoticesPageState();
+}
+
+class _AdminNoticesPageState extends State<AdminNoticesPage> {
+  final _title = TextEditingController();
+  final _body = TextEditingController();
+  final _version = TextEditingController();
+  String _kind = 'broadcast';
+  bool _busy = false;
+  String _msg = '';
+  List<AppNotice> _posted = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPosted();
+  }
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _body.dispose();
+    _version.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadPosted() async {
+    try {
+      final r = await http.get(Uri.parse('$kApiBase/api/notices'));
+      if (r.statusCode == 200) {
+        final d = jsonDecode(r.body) as Map<String, dynamic>;
+        _posted = ((d['notices'] as List?) ?? [])
+            .map((e) =>
+                AppNotice.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+        if (mounted) setState(() {});
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _post() async {
+    if (_title.text.trim().isEmpty || _body.text.trim().isEmpty) {
+      setState(() => _msg = 'Title and message are both required.');
+      return;
+    }
+    if (_kind == 'update' && _version.text.trim().isEmpty) {
+      setState(() => _msg = 'An update notice needs the new version number.');
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _msg = '';
+    });
+    try {
+      final r = await auth.api('/api/admin/notices',
+          method: 'POST',
+          body: {
+            'title': _title.text.trim(),
+            'body': _body.text.trim(),
+            'kind': _kind,
+            'version': _version.text.trim(),
+          });
+      if (r.statusCode == 200) {
+        _title.clear();
+        _body.clear();
+        _version.clear();
+        setState(() => _msg = 'Posted — users will see it when they open the app.');
+        await _loadPosted();
+        await noticesSvc.fetch();
+      } else {
+        setState(() => _msg = apiError(r));
+      }
+    } catch (_) {
+      setState(() => _msg = 'Network error.');
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  Future<void> _delete(AppNotice n) async {
+    try {
+      final r = await auth.api('/api/admin/notices?id=${n.id}',
+          method: 'DELETE');
+      if (r.statusCode == 200) {
+        setState(() => _posted = _posted.where((x) => x.id != n.id).toList());
+        await noticesSvc.fetch();
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: featureBar('Broadcast & Updates'),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text(
+              'Send a message to everyone who uses MathMitra. Broadcasts '
+              'pop up once when a user opens the app; an app-update notice '
+              'pops up only for users on an older version.',
+              style: TextStyle(fontSize: 13, height: 1.45)),
+          const SizedBox(height: 14),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(
+                  value: 'broadcast',
+                  icon: Icon(Icons.campaign_outlined, size: 17),
+                  label: Text('Broadcast')),
+              ButtonSegment(
+                  value: 'update',
+                  icon: Icon(Icons.system_update_outlined, size: 17),
+                  label: Text('App update')),
+            ],
+            selected: {_kind},
+            onSelectionChanged: (v) => setState(() => _kind = v.first),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _title,
+            maxLength: 120,
+            decoration: const InputDecoration(
+                labelText: 'Title', border: OutlineInputBorder()),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _body,
+            maxLength: 1000,
+            maxLines: 4,
+            decoration: const InputDecoration(
+                labelText: 'Message', border: OutlineInputBorder()),
+          ),
+          if (_kind == 'update') ...[
+            const SizedBox(height: 10),
+            TextField(
+              controller: _version,
+              decoration: const InputDecoration(
+                  labelText: 'New version (e.g. 1.2.1)',
+                  border: OutlineInputBorder()),
+            ),
+          ],
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: _busy ? null : _post,
+            icon: const Icon(Icons.send_outlined, size: 18),
+            label: Text(_busy ? 'Posting…' : 'Post notice'),
+          ),
+          if (_msg.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(_msg, style: const TextStyle(fontSize: 13)),
+          ],
+          const Divider(height: 28),
+          const Text('Posted notices',
+              style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+          if (_posted.isEmpty)
+            Text('None yet.',
+                style: TextStyle(color: subtleColor(context), fontSize: 13)),
+          for (final n in _posted)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(
+                  n.isUpdate
+                      ? Icons.system_update_outlined
+                      : Icons.campaign_outlined,
+                  color: kPrimary),
+              title: Text(n.title),
+              subtitle: Text(
+                  '${n.isUpdate ? 'Update · v${n.version}' : 'Broadcast'} · ${fmtIst(n.createdAt)}'),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete_outline),
+                tooltip: 'Delete',
+                onPressed: () => _delete(n),
+              ),
+            ),
+        ],
       ),
     );
   }

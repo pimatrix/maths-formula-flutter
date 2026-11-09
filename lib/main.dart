@@ -17,7 +17,7 @@ import 'pdf_export.dart' deferred as pdf_export;
 
 const String kApiUrl = 'https://yashx.xyz/MathMitra/api/formulas';
 const String kSiteUrl = 'https://yashx.xyz/MathMitra';
-const String kAppVersion = '1.2.0';
+const String kAppVersion = '1.2.1';
 const String kCacheKey = 'fs_api_cache_v1';
 const Color kPrimary = Color(0xFF4338CA);
 const Color kPrimaryDark = Color(0xFF2A1A5E);
@@ -419,13 +419,50 @@ List<List<String>> parseTable(String html) {
 /// Scrolls sideways on narrow screens instead of squeezing cells.
 class FormulaTable extends StatelessWidget {
   final List<List<String>> rows;
-  const FormulaTable({super.key, required this.rows});
+  final bool compact;
+  const FormulaTable({super.key, required this.rows, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
     final cols =
         rows.fold<int>(0, (m, r) => r.length > m ? r.length : m);
     final cs = Theme.of(context).colorScheme;
+    if (compact) {
+      return Table(
+        columnWidths: {
+          for (var i = 0; i < cols; i++) i: const FlexColumnWidth()
+        },
+        border: TableBorder.all(
+            color: Theme.of(context).dividerColor, width: 0.5),
+        children: [
+          for (var r = 0; r < rows.length; r++)
+            TableRow(
+              decoration: r == 0
+                  ? BoxDecoration(color: kPrimary.withValues(alpha: 0.10))
+                  : null,
+              children: [
+                for (var c = 0; c < cols; c++)
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+                    child: Text(
+                      c < rows[r].length ? rows[r][c] : '',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 11,
+                        height: 1.25,
+                        fontWeight: (r == 0 || c == 0)
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: cs.onSurface,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+        ],
+      );
+    }
     return LayoutBuilder(builder: (context, box) {
       final wanted = cols * 62.0;
       final width = wanted > box.maxWidth ? wanted : box.maxWidth;
@@ -1173,6 +1210,9 @@ class _HomePageState extends State<HomePage> {
     auth.addListener(_onAuth);
     auth.load();
     library.init();
+    noticesSvc.init().then((_) {
+      if (mounted) maybeShowNoticePopups(context);
+    });
     Tracker.instance.start();
     BrowseSel.instance.addListener(_onBrowse);
     DataPing.instance.addListener(_refreshData);
@@ -1718,8 +1758,14 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const SizedBox(height: 8),
                           // Theory entries show their FULL text in the list;
-                          // formulas get a compact preview.
-                          Text(
+                          // formulas get a compact preview. Table entries
+                          // render their real grid right here on the card.
+                          if (e.kind == 'table' &&
+                              parseTable(e.body).length > 1)
+                            FormulaTable(
+                                rows: parseTable(e.body), compact: true)
+                          else
+                            Text(
                             fullText
                                 ? structuredPlain(stripTitlePrefix(
                                     displayText(e.body),
@@ -2638,6 +2684,30 @@ class _MorePageState extends State<MorePage> {
             onTap: _pdfBusy ? null : _makePdf,
           ),
           const Divider(),
+          ListTile(
+            leading: const Icon(Icons.campaign_outlined),
+            title: const Text('Notices'),
+            subtitle: const Text('Announcements and app updates'),
+            trailing: ListenableBuilder(
+              listenable: noticesSvc,
+              builder: (context, _) => noticesSvc.unread > 0
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE0245E),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text('${noticesSvc.unread}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700)),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            onTap: () => _push(const NoticesPage()),
+          ),
           ListTile(
             leading: const Icon(Icons.folder_special_outlined),
             title: const Text('My Library'),
